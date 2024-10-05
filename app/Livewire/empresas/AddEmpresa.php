@@ -1,9 +1,11 @@
 <?php
 namespace App\Livewire\empresas;
 
-use App\Livewire\Prestadores;
-use App\Livewire\User;
+use App\Models\Prestadores;
+use App\Models;
+use App\Models\User;
 
+use Illuminate\Support\Facades\Hash;
 
 use Livewire\Component;
 
@@ -45,14 +47,16 @@ class AddEmpresa extends Component
         ]);
 
          try {
-            Prestadores::create([
-                'name' => $this->nomeEmpresa,
+            $Prestadores = Prestadores::create([
+                'nome' => $this->nomeEmpresa,
                 'email' => $this->emailEmpresa,
                 'endereco' => $this->enderecoEmpresa,
                 'contacto' => $this->contactoEmpresa,
                 'especializacao' => $this->especializacaoEmpresa,
                 'contribuinte' => $this->contribuinteEmpresa,
                 'imagem' => $this->imagemEmpresa,
+                'qtd_usuarios' => 1,
+                'status' => "active",
                 'data_criacao' => $this->data_criacaoEmpresa,
             ]);
 
@@ -60,6 +64,9 @@ class AddEmpresa extends Component
                 'name' => $this->nomeUsuario,
                 'apelido' => $this->apelidoUsuario,
                 'email' => $this->emailUsuario,
+                'id_prestadores' => $Prestadores->id,
+                'function' => 0,
+                'nivel' => 1,
                 'password' => Hash::make($this->senhaUsuario)
             ]);
 

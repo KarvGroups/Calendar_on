@@ -54,6 +54,7 @@
                 <tr>
                   <th> Imagem </th>
                   <th> Nome </th>
+                  <th> E-mail </th>
                   <th> Espaço </th>
                   <th> Usuarios </th>
                   <th> Status </th>
@@ -62,44 +63,27 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td class="py-1">
-                    <img src="../../assets/images/faces-clipart/pic-1.png" alt="image" />
-                  </td>
-                  <td> Herman Beck </td>
-                  <td>
-                    <div class="progress">
-                      <div class="progress-bar bg-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                  </td>
-                  <td> $ 77.99 </td>
-                  <td> May 15, 2015 </td>
-                  <td>
-                    <button type="button" class="btn btn-sm btn-gradient-primary btn-rounded btn-icon">
-                        <i class="fa fa-pencil"></i>
-                    </button></td>
-                </tr>
-                <tr>
-                  <td class="py-1">
-                    <img src="../../assets/images/faces-clipart/pic-2.png" alt="image" />
-                  </td>
-                  <td> Messsy Adam </td>
-                  <td>
-                    <div class="progress">
-                      <div class="progress-bar bg-danger" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                  </td>
-                  <td> $245.30 </td>
-                  <td> July 1, 2015 </td>
-                  <td>
-                    <button type="button" class="btn btn-sm btn-gradient-primary btn-rounded btn-icon">
-                        <i class="fa fa-pencil"></i>
-                    </button>
-                    </td>
-
-                </tr>
-
-
+                @foreach ($prestadores as $prestador)
+                    <tr>
+                        <td class="py-1">
+                            <img src="../../assets/images/faces-clipart/pic-1.png" alt="image" />
+                        </td>
+                        <td> {{$prestador->nome}} </td>
+                        <td> {{$prestador->email}} </td>
+                        <td>
+                            <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </td>
+                        <td>{{$prestador->qtd_usuarios}}</td>
+                        <td> {{$prestador->status}} </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-gradient-primary btn-rounded btn-icon">
+                                <i class="fa fa-pencil"></i>
+                            </button>
+                        </td>
+                    </tr>
+                @endforeach
 
               </tbody>
             </table>
@@ -136,7 +120,7 @@
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-              <button type="button" class="btn btn-gradient-primary">Salvar</button>
+              <button type="button" class="btn btn-gradient-primary">Enviar</button>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Prestadores;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,12 +12,14 @@ class Prestadores extends Model
     protected $table = "prestadores";
 
     protected $fillable = [
-        'name',
+        'nome',
         'email',
         'endereco',
         'contacto',
         'especializacao',
         'contribuinte',
+        'qtd_usuarios',
+        'status',
         'imagem',
         'data_criacao',
         'create_at',

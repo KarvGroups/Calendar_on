@@ -31,6 +31,8 @@ class User extends Authenticatable
         'email',
         'password',
         'function',
+        'id_prestadores',
+        'nivel',
     ];
 
     /**
