@@ -78,7 +78,7 @@
                         <td>{{$prestador->qtd_usuarios}}</td>
                         <td> {{$prestador->status}} </td>
                         <td>
-                            <button type="button" class="btn btn-sm btn-gradient-primary btn-rounded btn-icon">
+                            <button type="button" wire:click='edit( {{$prestador->id}} )' class="btn btn-sm btn-gradient-primary btn-rounded btn-icon">
                                 <i class="fa fa-pencil"></i>
                             </button>
                         </td>

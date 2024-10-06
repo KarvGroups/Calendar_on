@@ -10,6 +10,10 @@ class IndexEmpresas extends Component
 {
     public $prestadores;
 
+    public function edit($id)
+    {
+        return redirect()->route('empresas.edit', $id);
+    }
     public function render()
     {
         $this->prestadores = Prestadores::all();

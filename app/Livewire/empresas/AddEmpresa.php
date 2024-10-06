@@ -67,6 +67,7 @@ class AddEmpresa extends Component
                 'id_prestadores' => $Prestadores->id,
                 'function' => 0,
                 'nivel' => 1,
+                'status' => "active",
                 'password' => Hash::make($this->senhaUsuario)
             ]);
 

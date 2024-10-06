@@ -74,6 +74,7 @@ return [
         'especializacaoEmpresa' => 'Especialização da Empresa',
         'contribuinteEmpresa' => 'Contribuinte da Empresa',
         'imagemEmpresa' => 'Imagem da Empresa',
+        'statusEmpresa' => 'Status da Empresa',
         'data_criacaoEmpresa' => 'Data de Criação da Empresa',
 
         'nomeUsuario' => 'Nome do Usuário',

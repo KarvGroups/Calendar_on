@@ -5,7 +5,7 @@
             <li class="nav-item nav-profile">
                 <a href="{{ route('profile.show') }}" class="nav-link">
                     <div class="nav-profile-image">
-                    <img src="../assets/images/faces/face1.jpg" alt="profile" />
+                    <img src="{{asset('/assets/images/faces/face1.jpg')}}" alt="profile" />
                     <span class="login-status online"></span>
                     <!--change to offline or busy as needed-->
                     </div>
@@ -42,19 +42,19 @@
                 </div>
             </li>
           @endif
-            {{-- <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="collapse" href="#icons" aria-expanded="false" aria-controls="icons">
-                <span class="menu-title">Icons</span>
-                <i class="mdi mdi-contacts menu-icon"></i>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#config" aria-expanded="false" aria-controls="icons">
+                    <span class="menu-title">Configuração</span>
+                    <i class="mdi mdi-contacts menu-icon"></i>
                 </a>
-                <div class="collapse" id="icons">
-                <ul class="nav flex-column sub-menu">
-                    <li class="nav-item">
-                    <a class="nav-link" href="pages/icons/font-awesome.html">Font Awesome</a>
-                    </li>
-                </ul>
+                <div class="collapse" id="config">
+                    <ul class="nav flex-column sub-menu">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Empresa</a>
+                        </li>
+                    </ul>
                 </div>
-            </li> --}}
+            </li>
         </ul>
     </nav>
 </div>
