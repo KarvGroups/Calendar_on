@@ -27,10 +27,15 @@ class EditEmpresa extends Component
     public ?string $password = "";
     public ?string $passwordConfirm = "";
 
+    public bool $showCreateUserForm = false;
 
     public ?string $message = "";
     public Prestadores $empresa;
     public Collection $funcionarios; // Alterado para Collection
+
+    public ?int $userId = null;
+    public bool $showEditUserModal = false;
+
 
     public function mount($id)
     {
@@ -55,18 +60,18 @@ class EditEmpresa extends Component
     {
         $this->validate([
             'nomeEmpresa' => 'required|string|max:255',
-            'emailEmpresa' => 'required|email|unique:Prestadores,email,' . $this->empresa->id, // Ignorar o e-mail da empresa atual
+            'emailEmpresa' => 'required|email|unique:Prestadores,email,' . $this->empresa->id,
             'enderecoEmpresa' => 'required|string|max:255',
             'contactoEmpresa' => 'required|string|max:20',
             'statusEmpresa' => 'required|string|max:255',
             'especializacaoEmpresa' => 'nullable|string|max:255',
-            'contribuinteEmpresa' => 'required|string|max:50|unique:Prestadores,contribuinte,' . $this->empresa->id, // Ignorar o contribuinte da empresa atual
+            'contribuinteEmpresa' => 'required|string|max:50|unique:Prestadores,contribuinte,' . $this->empresa->id,
             'imagemEmpresa' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'data_criacaoEmpresa' => 'required|date',
         ]);
 
         try {
-            // Atualizar os dados da empresa
+
             $this->empresa->update([
                 'nome' => $this->nomeEmpresa,
                 'email' => $this->emailEmpresa,
@@ -89,6 +94,7 @@ class EditEmpresa extends Component
     }
     public function criarUser()
     {
+        $this->showCreateUserForm = true;
         $this->validate([
             'nome' => 'required|string|max:255',
             'apelido' => 'required|string|max:255',
@@ -106,13 +112,12 @@ class EditEmpresa extends Component
                 'email' => $this->email,
                 'contacto' => $this->contacto,
                 'status' => $this->status,
-                'function' => 0,
+                'function' => 1,
                 'nivel' => 1,
                 'password' => bcrypt($this->password),
                 'id_prestadores' => $this->empresa->id,
             ]);
 
-            // Limpar os campos do formulário após a criação
             $this->reset(['nome', 'apelido', 'email', 'contacto', 'especializacao', 'status', 'password', 'passwordConfirm']);
 
             $this->message = "Usuário criado com sucesso.";
@@ -123,6 +128,63 @@ class EditEmpresa extends Component
             $this->dispatch('alert', ['type' => 'error', 'message' => $this->message]);
         }
     }
+    public function editarUser($id)
+    {
+        $user = User::find($id);
+
+        if ($user) {
+            $this->userId = $user->id;
+            $this->nome = $user->name;
+            $this->apelido = $user->apelido;
+            $this->email = $user->email;
+            $this->contacto = $user->contacto;
+            $this->especializacao = $user->especializacao;
+            $this->status = $user->status;
+
+            // Exibir o modal de edição
+            $this->showEditUserModal = true;
+        }
+    }
+    public function atualizarUser()
+    {
+        $this->validate([
+            'nome' => 'required|string|max:255',
+            'apelido' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $this->userId,
+            'contacto' => 'required|string|max:20',
+            'status' => 'required|string|in:active,inactive',
+            'password' => 'nullable|string|min:6',
+            'passwordConfirm' => 'same:password',
+        ]);
+        if ($this->userId) {
+            $user = User::find($this->userId);
+
+            if ($user) {
+                $user->update([
+                    'name' => $this->nome,
+                    'apelido' => $this->apelido,
+                    'email' => $this->email,
+                    'contacto' => $this->contacto,
+                    'especializacao' => $this->especializacao,
+                    'status' => $this->status,
+                ]);
+                // Atualizar a senha apenas se uma nova senha for fornecida
+                if (!empty($this->password)) {
+                    $user->update([
+                        'password' => bcrypt($this->password),
+                    ]);
+                }
+
+                $this->message = "Usuário atualizado com sucesso.";
+                $this->dispatch('alert', ['type' => 'success', 'message' => $this->message]);
+
+                // Fechar o modal e limpar os campos
+                $this->reset(['userId', 'nome', 'apelido', 'email', 'contacto', 'especializacao', 'status', 'password', 'passwordConfirm', 'showEditUserModal']);
+            }
+        }
+    }
+
+
 
     public function render()
     {

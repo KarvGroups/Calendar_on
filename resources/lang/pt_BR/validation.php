@@ -81,5 +81,13 @@ return [
         'apelidoUsuario' => 'Apelido do Usuário',
         'emailUsuario' => 'Email do Usuário',
         'senhaUsuario' => 'Senha do Usuário',
+
+        'name' => 'Nome do Usuário',
+        'apelido' => 'Apelido do Usuário',
+        'email' => 'Email do Usuário',
+        'contacto' => 'Contacto do Usuário',
+        'status' => 'Status do Usuário',
+        'nivel' => 'Nivel do Usuário',
+        'password' => 'Senha do Usuário',
     ],
 ];

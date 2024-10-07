@@ -30,6 +30,7 @@ class User extends Authenticatable
         'apelido',
         'email',
         'password',
+        'contacto',
         'function',
         'id_prestadores',
         'nivel',

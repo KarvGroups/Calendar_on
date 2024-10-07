@@ -65,7 +65,7 @@ class AddEmpresa extends Component
                 'apelido' => $this->apelidoUsuario,
                 'email' => $this->emailUsuario,
                 'id_prestadores' => $Prestadores->id,
-                'function' => 0,
+                'function' => 1,
                 'nivel' => 1,
                 'status' => "active",
                 'password' => Hash::make($this->senhaUsuario)

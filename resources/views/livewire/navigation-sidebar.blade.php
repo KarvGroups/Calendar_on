@@ -44,7 +44,7 @@
           @endif
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#config" aria-expanded="false" aria-controls="icons">
-                    <span class="menu-title">Configuração</span>
+                    <span class="menu-title">Administração</span>
                     <i class="mdi mdi-contacts menu-icon"></i>
                 </a>
                 <div class="collapse" id="config">

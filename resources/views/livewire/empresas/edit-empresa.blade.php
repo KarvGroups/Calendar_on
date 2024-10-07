@@ -84,12 +84,12 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                    <h4 class="card-title">Usuarios</h4>
-                   <button class="btn btn-sm btn-gradient-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                    <button class="btn btn-sm btn-gradient-primary" type="button" wire:click="$toggle('showCreateUserForm')">
                         <i class="fa fa-plus"></i>
                     </button>
                 </div>
 
-                <div class="collapse" id="collapseExample">
+                <div class="collapse {{ $showCreateUserForm ? 'show' : '' }}" id="collapseExample">
                     <div class="row">
                         <h4 class="card-title">Adicionar novo usuario</h4>
                         <div class="col-md-6">
@@ -183,7 +183,7 @@
 
                               <td> {{$funcionario->status}} </td>
                               <td>
-                                  <button type="button" class="btn btn-sm btn-gradient-primary btn-rounded btn-icon">
+                                  <button type="button" wire:click="editarUser({{$funcionario->id}})" class="btn btn-sm btn-gradient-primary btn-rounded btn-icon">
                                       <i class="fa fa-pencil"></i>
                                   </button>
                               </td>
@@ -192,6 +192,66 @@
 
                     </tbody>
                   </table>
+            </div>
+        </div>
+    </div>
+
+    @if($showEditUserModal)
+        <div class="modal-backdrop fade show"></div>
+    @endif
+    <div class="modal fade {{ $showEditUserModal ? 'show d-block' : '' }}" style="{{ $showEditUserModal ? 'display: block;' : 'display: none;' }}" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Usuário</h5>
+                    <button type="button" class="close" wire:click="$set('showEditUserModal', false)">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" wire:model.defer="nome" class="form-control" />
+                        @error('nome') <span class="text-red-500">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="form-group">
+                        <label>Apelido</label>
+                        <input type="text" wire:model.defer="apelido" class="form-control" />
+                        @error('apelido') <span class="text-red-500">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" wire:model.defer="email" class="form-control" />
+                        @error('email') <span class="text-red-500">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="form-group">
+                        <label>Contacto</label>
+                        <input type="text" wire:model.defer="contacto" class="form-control" />
+                        @error('contacto') <span class="text-red-500">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select wire:model.defer="status" class="form-control">
+                            <option value="active">Ativo</option>
+                            <option value="inactive">Inativo</option>
+                        </select>
+                        @error('status') <span class="text-red-500">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="form-group">
+                        <label>Senha</label>
+                        <input type="password" wire:model.defer="password" class="form-control" />
+                        @error('password') <span class="text-red-500">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="form-group">
+                        <label>Confirme a Senha</label>
+                        <input type="password" wire:model.defer="passwordConfirm" class="form-control" />
+                        @error('passwordConfirm') <span class="text-red-500">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" wire:click="$set('showEditUserModal', false)">Cancelar</button>
+                    <button type="button" class="btn btn-primary" wire:click="atualizarUser">Salvar Alterações</button>
+                </div>
             </div>
         </div>
     </div>
