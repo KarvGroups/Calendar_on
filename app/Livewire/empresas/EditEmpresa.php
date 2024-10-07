@@ -18,6 +18,16 @@ class EditEmpresa extends Component
     public ?string $data_criacaoEmpresa = "";
     public ?string $statusEmpresa = "";
 
+    public ?string $nome = "";
+    public ?string $apelido = "";
+    public ?string $email = "";
+    public ?string $contacto = "";
+    public ?string $especializacao = "";
+    public ?string $status = "active";
+    public ?string $password = "";
+    public ?string $passwordConfirm = "";
+
+
     public ?string $message = "";
     public Prestadores $empresa;
     public Collection $funcionarios; // Alterado para Collection
@@ -74,6 +84,42 @@ class EditEmpresa extends Component
 
         } catch (Exception $e) {
             $this->message = "Erro ao atualizar a empresa: " . $e->getMessage();
+            $this->dispatch('alert', ['type' => 'error', 'message' => $this->message]);
+        }
+    }
+    public function criarUser()
+    {
+        $this->validate([
+            'nome' => 'required|string|max:255',
+            'apelido' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'contacto' => 'required|string|max:20',
+            'status' => 'required|string|in:active,inactive',
+            'password' => 'required|string|min:6',
+            'passwordConfirm' => 'required|same:password',
+        ]);
+
+        try {
+            User::create([
+                'name' => $this->nome,
+                'apelido' => $this->apelido,
+                'email' => $this->email,
+                'contacto' => $this->contacto,
+                'status' => $this->status,
+                'function' => 0,
+                'nivel' => 1,
+                'password' => bcrypt($this->password),
+                'id_prestadores' => $this->empresa->id,
+            ]);
+
+            // Limpar os campos do formulário após a criação
+            $this->reset(['nome', 'apelido', 'email', 'contacto', 'especializacao', 'status', 'password', 'passwordConfirm']);
+
+            $this->message = "Usuário criado com sucesso.";
+            $this->dispatch('alert', ['type' => 'success', 'message' => $this->message]);
+
+        } catch (\Exception $e) {
+            $this->message = "Erro ao criar o usuário: " . $e->getMessage();
             $this->dispatch('alert', ['type' => 'error', 'message' => $this->message]);
         }
     }

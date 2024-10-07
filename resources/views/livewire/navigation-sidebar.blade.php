@@ -50,7 +50,7 @@
                 <div class="collapse" id="config">
                     <ul class="nav flex-column sub-menu">
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Empresa</a>
+                            <a class="nav-link" href="{{ route('empresas.edit', Auth::user()->id_prestadores  ) }}">Empresa</a>
                         </li>
                     </ul>
                 </div>

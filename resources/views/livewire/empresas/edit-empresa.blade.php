@@ -84,12 +84,75 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                    <h4 class="card-title">Usuarios</h4>
-                   <button type="button" class="btn btn-sm btn-gradient-primary">
-                    <i class="fa fa-plus"></i>
-                </button>
+                   <button class="btn btn-sm btn-gradient-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                        <i class="fa fa-plus"></i>
+                    </button>
                 </div>
 
+                <div class="collapse" id="collapseExample">
+                    <div class="row">
+                        <h4 class="card-title">Adicionar novo usuario</h4>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class=" col-form-label">Nome da empresa</label>
+                                <input type="text" wire:model.defer="nome" class="form-control" />
+                                @error('nome') <span class="text-red-500">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class=" col-form-label">Apelido</label>
+                                <input type="text" wire:model.defer="apelido" class="form-control" />
+                                @error('apelido') <span class="text-red-500">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class=" col-form-label">Email</label>
+                                <input type="email" wire:model.defer="email" class="form-control" />
+                                @error('email') <span class="text-red-500">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class=" col-form-label">Número de contacto</label>
+                                <input type="tel" wire:model.defer="contacto" class="form-control" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" required/>
+                                @error('contacto') <span class="text-red-500">{{ $message }}</span> @enderror
 
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class=" col-form-label">status</label>
+                                <select class="js-example-basic-single" wire:model.defer="status" style="width:100%">
+                                    <option value="active">Ativo</option>
+                                    <option value="inactive">Inativo</option>
+                                </select>
+                                @error('status') <span class="text-red-500">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class=" col-form-label">Senha</label>
+                                <input type="text" wire:model.defer="password" class="form-control" />
+                                @error('password') <span class="text-red-500">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class=" col-form-label">Confirma Senha</label>
+                                <input type="text" wire:model.defer="passwordConfirm" class="form-control" />
+                                @error('passwordConfirm') <span class="text-red-500">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button wire:click="criarUser" class="btn btn-gradient-primary mb-2">Criar Usuário</button>
+                    </div>
+
+                    <br>
+                    <hr>
+                </div>
                 <table class="table table-striped">
                     <thead>
                       <tr>
