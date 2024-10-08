@@ -107,6 +107,23 @@
 /* === Import template variables === */
 /*-------------------------------------------------------------------*/
 /* === SCSS Compass Functions === */
+
+
+:root {
+--primary-clr: #b38add;
+}
+/* nice scroll bar */
+    ::-webkit-scrollbar {
+    width: 5px;
+}
+::-webkit-scrollbar-track {
+    background: #f5f5f5;
+    border-radius: 50px;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--primary-clr);
+    border-radius: 50px;
+}
 @-moz-keyframes flash {
   0% {
     opacity: 1;

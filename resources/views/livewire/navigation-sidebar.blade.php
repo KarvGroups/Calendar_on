@@ -45,12 +45,27 @@
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#config" aria-expanded="false" aria-controls="icons">
                     <span class="menu-title">Administração</span>
+                    <i class="menu-arrow"></i>
                     <i class="mdi mdi-contacts menu-icon"></i>
                 </a>
                 <div class="collapse" id="config">
                     <ul class="nav flex-column sub-menu">
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('empresas.edit', Auth::user()->id_prestadores  ) }}">Empresa</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#Service" aria-expanded="false" aria-controls="icons">
+                    <span class="menu-title">Serviços</span>
+                    <i class="menu-arrow"></i>
+                    <i class="fa fa-gear menu-icon"></i>
+                </a>
+                <div class="collapse" id="Service">
+                    <ul class="nav flex-column sub-menu">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Categorias</a>
                         </li>
                     </ul>
                 </div>
