@@ -25,4 +25,8 @@ class Prestadores extends Model
         'create_at',
         'update_at'
     ];
+    public function user()
+    {
+        return $this->hasOne(User::class, 'id_prestadores', 'id');
+    }
 }
