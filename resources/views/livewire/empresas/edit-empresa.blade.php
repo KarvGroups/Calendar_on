@@ -63,7 +63,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class=" col-form-label">Especializações </label>
+                            <label class=" col-form-label">Status </label>
                             <select class="js-example-basic-single" wire:model.defer="statusEmpresa" style="width:100%">
                                 <option value="active">Ativo</option>
                                 <option value="inactive">Inativo</option>
