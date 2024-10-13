@@ -67,6 +67,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('service.category') }}">Categorias</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('service.horarios') }}">Horários</a>
+                        </li>
                     </ul>
                 </div>
             </li>

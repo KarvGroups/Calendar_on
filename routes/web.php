@@ -33,6 +33,8 @@ Route::middleware([
     Route::get('/empresas/edit/{id}', [EmpresasController::class, 'edit'])->name('empresas.edit');
 
     Route::get('/service/category', [ServiceController::class, 'index'])->name('service.category');
+    Route::get('/service/horarios', [ServiceController::class, 'indexHorarios'])->name('service.horarios');
+
 
 
 
