@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmpresasController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\EventController;
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,9 @@ Route::middleware([
     Route::get('/empresas', [EmpresasController::class, 'index'])->name('empresas');
     Route::get('/empresas/create', [EmpresasController::class, 'create'])->name('empresas.create');
     Route::get('/empresas/edit/{id}', [EmpresasController::class, 'edit'])->name('empresas.edit');
+
+    Route::get('/service/category', [ServiceController::class, 'index'])->name('service.category');
+
 
 
 });

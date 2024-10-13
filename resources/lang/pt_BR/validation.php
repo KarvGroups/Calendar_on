@@ -89,5 +89,10 @@ return [
         'status' => 'Status do Usuário',
         'nivel' => 'Nivel do Usuário',
         'password' => 'Senha do Usuário',
+
+        'serviceTitle' => 'Titulo do Serviço',
+        'servicePrice' => 'Preço do serviço',
+        'serviceTime' => 'Tempo do Usuário',
+        'selectedCategoryId' => 'Id Categoria',
     ],
 ];
