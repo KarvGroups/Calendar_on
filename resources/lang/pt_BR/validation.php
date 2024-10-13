@@ -90,6 +90,8 @@ return [
         'nivel' => 'Nivel do Usuário',
         'password' => 'Senha do Usuário',
 
+        'service_ids' => 'Id dos Serviços',
+
         'serviceTitle' => 'Titulo do Serviço',
         'servicePrice' => 'Preço do serviço',
         'serviceTime' => 'Tempo do Usuário',

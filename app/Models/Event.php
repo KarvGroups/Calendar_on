@@ -13,6 +13,7 @@ class Event extends Model
         'date',
         'id_user',
         'user',
+        'id_services',
         'id_prestadores',
         'start_time',
         'end_time',

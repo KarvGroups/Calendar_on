@@ -169,7 +169,6 @@
         }
 
     </style>
-    <!-- Formulário para adicionar eventos -->
     <div class="row">
         <div class="col-md-6 px-0 px-md-3" style="margin-bottom: 15px">
 
@@ -185,7 +184,6 @@
                     </button>
                 </div>
 
-                <!-- Cabeçalho dos dias da semana -->
                 <div class="weekdays">
                     <div>D</div>
                     <div>S</div>
@@ -195,18 +193,13 @@
                     <div>S</div>
                     <div>S</div>
                 </div>
-
-                <!-- Grade dos dias do mês -->
                 <div class="days grid grid-cols-7 gap-2 mt-4">
-                    <!-- Preenchimento para alinhar o primeiro dia do mês -->
                     @for ($i = 0; $i < $startDayOfMonth; $i++)
                         <div class="day-placeholder"></div>
                     @endfor
 
-                    <!-- Loop através dos dias do mês -->
                     @for ($day = 1; $day <= $daysInMonth; $day++)
                         @php
-                            // Converte o número do dia para string com dois dígitos
                             $dayString = str_pad($day, 2, '0', STR_PAD_LEFT);
                         @endphp
                         <div class="day
@@ -215,7 +208,6 @@
                             wire:click="selectDay({{ $day }})">
                             <span>{{ $day }}</span>
 
-                            <!-- Indicador de que há eventos para este dia -->
                             @if(isset($events[$dayString]))
                                 <div class="event-indicator"></div>
                             @endif
@@ -229,10 +221,10 @@
     </div>
 
     <div class="col-md-6 overflow-auto" style="height: 412px;">
-        <button class="add-event" data-bs-toggle="collapse" href="#addEvent" role="button" aria-expanded="false" aria-controls="addEvent">
+        <button class="add-event" data-bs-toggle="collapse" wire:click="toggleAddEvent" role="button" aria-expanded="false" aria-controls="addEvent">
             <i class="fa fa-plus"></i>
         </button>
-        <div class="collapse" id="addEvent">
+        <div class="collapse @if($isAddEventOpen) show @endif" id="addEvent">
             <form class="mt-3 add-event-body" action="{{ route('events.store') }}" method="POST">
                 @csrf
                 <div class="add-event-input">
@@ -247,14 +239,34 @@
                 <div class="add-event-input">
                     <input type="time" name="end_time" required>
                 </div>
+                <div class="add-event-input">
+                    <select id="service-select" class="form-control" wire:model="selectedService" style="width: 100%">
+                        <option value="">Selecione um serviço</option>
+                        @foreach($services as $service)
+                            <option value="{{ $service->id }}">{{ $service->title }}</option>
+                        @endforeach
+                    </select>
+                    <button type="button" class="btn btn-sm btn-primary mt-2" wire:click="addSelectedService">add</button>
+                </div>
+
+                <ul>
+                    @foreach($selectedServices as $serviceId)
+                        @php
+                            $service = \App\Models\Service::find($serviceId);
+                        @endphp
+                        <li>{{ $service->title }}</li>
+                    @endforeach
+                </ul>
+
+                <input type="hidden" name="service_ids" value="{{ implode(',', $selectedServices) }}">
 
                 <input type="hidden" name="id_user" value="{{ Auth::user()->id }}">
                 <input type="hidden" name="user" value="{{ Auth::user()->apelido }}">
                 <input type="hidden" name="id_prestadores" value="{{ Auth::user()->id_prestadores }}">
 
-
                 <button class="btn btn-primary" type="submit">Adicionar Evento</button>
             </form>
+
         </div>
 
         @if ($selectedDay)
@@ -418,4 +430,20 @@
             </div>
         </div>
       </div>
+      <script>
+        document.addEventListener('livewire:load', function () {
+            $('#service-select').select2();
+
+            // Reinicializar o select2 após Livewire atualizar o DOM
+            Livewire.hook('message.processed', (message, component) => {
+                $('#service-select').select2();
+            });
+
+            // Capturar mudança no select2 e informar ao Livewire
+            $('#service-select').on('change', function (e) {
+                let serviceId = $(this).val();
+                @this.set('selectedService', serviceId); // Atualiza no Livewire
+            });
+        });
+    </script>
 </div>

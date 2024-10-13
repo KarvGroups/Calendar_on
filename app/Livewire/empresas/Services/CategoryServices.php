@@ -20,21 +20,19 @@ class CategoryServices extends Component
     public $isEditingService = false;
     public $selectedServiceId;
 
-    // Carregar categorias ao montar o componente
     public function mount()
     {
         $this->loadCategories();
     }
 
-    // Carregar as categorias com os serviços
     public function loadCategories()
     {
         $this->GrupCategory = Category::where('id_empresa', Auth::user()->id_prestadores)
+            ->where('id_user', Auth::user()->id)
             ->with('services')
             ->get();
     }
 
-    // Criar nova categoria
     public function createCategory()
     {
         $this->validate([
@@ -120,7 +118,7 @@ class CategoryServices extends Component
         $this->serviceTitle = $service->title;
         $this->servicePrice = $service->price;
         $this->serviceTime = $service->time;
-        $this->status = $service->status;  // Adicionei o status aqui
+        $this->status = $service->status;
     }
 
 
@@ -130,7 +128,7 @@ class CategoryServices extends Component
             'serviceTitle' => 'required|string|max:250',
             'servicePrice' => 'required|numeric',
             'serviceTime' => 'required',
-            'status' => 'required|string', // Validação para o status
+            'status' => 'required|string',
         ]);
 
         $service = Service::find($this->selectedServiceId);
@@ -138,7 +136,7 @@ class CategoryServices extends Component
             'title' => $this->serviceTitle,
             'price' => $this->servicePrice,
             'time' => $this->serviceTime,
-            'status' => $this->status, // Atualizando o status
+            'status' => $this->status,
         ]);
 
         $this->serviceTitle = '';
@@ -167,15 +165,11 @@ class CategoryServices extends Component
 
     public function deleteCategory($categoryId)
 {
-    // Encontre a categoria pelo ID
     $category = Category::find($categoryId);
 
-    // Verifique se a categoria existe antes de tentar deletá-la
     if ($category) {
-        // Exclua os serviços relacionados à categoria
         $category->services()->delete();
 
-        // Exclua a categoria
         $category->delete();
 
         session()->flash('success', 'Categoria e seus serviços foram deletados com sucesso.');
@@ -183,17 +177,13 @@ class CategoryServices extends Component
         session()->flash('error', 'Categoria não encontrada.');
     }
 
-    // Recarregue as categorias para refletir a exclusão
     $this->loadCategories();
 }
 public function deleteService($serviceId)
 {
-    // Encontre o serviço pelo ID
     $service = Service::find($serviceId);
 
-    // Verifique se o serviço existe antes de tentar deletá-lo
     if ($service) {
-        // Exclua o serviço
         $service->delete();
 
         session()->flash('success', 'Serviço deletado com sucesso.');
@@ -201,7 +191,6 @@ public function deleteService($serviceId)
         session()->flash('error', 'Serviço não encontrado.');
     }
 
-    // Recarregue as categorias para refletir a exclusão
     $this->loadCategories();
 }
 
