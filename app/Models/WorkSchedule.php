@@ -13,6 +13,7 @@ class WorkSchedule extends Model
         'day_of_week',
         'start_time',
         'end_time',
+        'is_working',
     ];
 
     // Relacionamento com o usuário
