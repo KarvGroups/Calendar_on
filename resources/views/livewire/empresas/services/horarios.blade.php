@@ -1,89 +1,134 @@
 <div>
     <style>
-        .calendar-container {
-    width: 100%;
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 20px;
-    font-family: "Poppins", sans-serif;
-    color: #878895;
-}
+    .calendar-container {
+        width: 100%;
+        background-color: #fff;
+        border-radius: 10px;
+        padding: 20px;
+        font-family: "Poppins", sans-serif;
+        color: #878895;
+    }
 
-.calendar-header {
-    text-align: center;
-}
+    .calendar-header {
+        padding: 20px 0;
+        display: flex;
+        justify-content: space-between;
+    }
+    .calendar-header button{
+        width: 40px;
+    }
+    .calendar-header button i{
+        font-size: 30px;
+    }
+    .weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        font-weight: bold;
+        color: #878895;
+    }
 
-.weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    text-align: center;
-    font-weight: bold;
-    color: #878895;
-}
+    .days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 1.4px;
+        margin-bottom: 13px;
+    }
 
-.days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 1.4px;
-    margin-bottom: 13px;
-}
+    .day {
+        font-size: 14px;
+        background-color: #f5f5f5;
+        text-align: center;
+        padding: 10px;
+        cursor: pointer;
+        position: relative;
+        border: 1px solid #ccc;
+    }
 
-.day {
-    background-color: #f5f5f5;
-    text-align: center;
-    padding: 10px;
-    cursor: pointer;
-    position: relative;
-    border: 1px solid #ccc;
-}
+    .work-day {
+        background-color: #b66dff;
+        color: white;
+    }
 
-.work-day {
-    background-color: #b66dff;
-    color: white;
-}
+    .no-work-day {
+        background-color: #f0f0f0;
+        color: gray;
+    }
 
-.no-work-day {
-    background-color: #f0f0f0;
-    color: gray;
-}
+    .selected-day {
+        /* border: 2px solid #7b057b8f; */
+        background-color: #b66dff !important;
+        color: #ffffff !important;
+    }
+    .delete-button {
+        background-color: red;
+        color: white;
+        padding: 10px;
+        border: none;
+        cursor: pointer;
+        margin-top: 10px;
+    }
 
-.selected-day-form {
-    margin-top: 20px;
-}
+    .delete-button:hover {
+        background-color: darkred;
+    }
+    .days-selected {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap; /* Permite que os itens quebrem em múltiplas linhas */
+    }
 
-.selected-day-form input[type="time"] {
-    margin: 5px 0;
-}
-.selected-day {
-    border: 2px solid #000; /* Exemplo: borda preta */
-    background-color: #d3d3d3; /* Exemplo: fundo mais escuro */
-}
+    .days-selected div {
+        font-size: 12px;
+        padding: 7px 11px;
+        background-color: #b66dff;
+        border-radius: 37px;
+        color: white;
+        margin: 5px;
+        white-space: nowrap; /* Evita que o texto quebre */
+    }
+
+    /* Responsividade para telas menores */
+    @media (max-width: 768px) {
+        .days-selected {
+            justify-content: flex-start; /* Ajusta a distribuição para alinhar à esquerda em telas menores */
+        }
+
+        .days-selected div {
+            font-size: 10px; /* Diminui a fonte em telas menores */
+            padding: 5px 8px; /* Reduz o padding */
+        }
+    }
+
+    @media (max-width: 480px) {
+        .days-selected div {
+            font-size: 9px; /* Diminui ainda mais o tamanho da fonte para telas pequenas */
+            padding: 4px 6px; /* Ajusta o padding para manter legibilidade */
+            margin: 3px; /* Reduz o espaçamento entre os itens */
+        }
+    }
+
 
     </style>
-    <h3>Gerenciar Horários de Trabalho</h3>
 
-    <!-- Calendário -->
     <div class="calendar-container">
         <div class="calendar-header">
-            <button wire:click="previousMonth">Anterior</button>
+            <button wire:click="previousMonth"><i class="fa fa-angle-left"></i></button>
             <h2>{{ \Carbon\Carbon::create($currentYear, $currentMonth)->translatedFormat('F Y') }}</h2>
-            <button wire:click="nextMonth">Próximo</button>
+            <button wire:click="nextMonth"><i class="fa fa-angle-right"></i></button>
         </div>
 
-        <!-- Cabeçalho dos dias da semana -->
         <div class="weekdays">
-            @foreach (['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'] as $day)
+            @foreach (['D', 'S', 'T', 'Q', 'Q', 'S', 'S'] as $day)
                 <div>{{ $day }}</div>
             @endforeach
         </div>
 
-        <!-- Grade dos dias do mês -->
         <div class="days grid grid-cols-7 gap-2 mt-4">
             @for ($i = 0; $i < $startDayOfMonth; $i++)
                 <div class="empty"></div>
             @endfor
 
-            <!-- Loop para exibir os dias do mês -->
             @for ($day = 1; $day <= $daysInMonth; $day++)
                 @php
                     $date = Carbon\Carbon::create($currentYear, $currentMonth, $day)->format('Y-m-d');
@@ -106,30 +151,68 @@
             @endfor
         </div>
     </div>
+    <br>
+    <div class="row">
+        <div class="col-12 col-md-6">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-12">
+                    <div class="days-selected">
+                        @foreach($selectedDays as $selectedDay)
+                            <div>{{ $selectedDay }}</div>
+                        @endforeach
+                    </div>
+                </div>
 
-    <!-- Detalhes do Dia Selecionado -->
 
-    <div class="selected-day-form">
-        <h4>Horários para os dias selecionados: {{ implode(', ', $selectedDays) }}</h4>
+                <div class="col-12">
 
-        <label>Trabalhar nesses dias?</label>
-        <input type="checkbox" wire:model="isWorking"> Sim/Não
 
-        <!-- Loop para adicionar múltiplos horários -->
-        @foreach($workBlocks as $index => $block)
-            <div>
-                <label>Hora de Início (Bloco {{ $index + 1 }}):</label>
-                <input type="time" wire:model="workBlocks.{{ $index }}.start_time" @if(!$isWorking) disabled @endif>
+                <div class="form-group">
+                    <label>Trabalhar nesses dias?</label>
 
-                <label>Hora de Término (Bloco {{ $index + 1 }}):</label>
-                <input type="time" wire:model="workBlocks.{{ $index }}.end_time" @if(!$isWorking) disabled @endif>
+                    <div class="form-check">
+
+                        <label class="form-check-label">
+                            <input type="checkbox" class="form-check-primary" wire:model="isWorking" checked> Sim/Não
+                        </label>
+                    </div>
+                </div>
+
+                @foreach($workBlocks as $index => $block)
+
+                    <div class="row">
+                        <dic class="col-2" style="align-items: center;justify-content: center;display: flex;">
+                            <button wire:click="addWorkBlock" class="btn btn-sm btn-gradient-primary" ><i class="fa fa-plus"></i></button>
+                        </dic>
+                        <div class="col-10 " >
+                            <div class="d-flex justify-content-end">
+                                <label style="align-items: center;justify-content: center;display: flex;">Hora de Início : </label>
+                                <input class="ms-2" type="time" wire:model="workBlocks.{{ $index }}.start_time" @if(!$isWorking) disabled @endif>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <label style="align-items: center;justify-content: center;display: flex;">Hora de Término : </label>
+                                <input class="ms-2" type="time" wire:model="workBlocks.{{ $index }}.end_time" @if(!$isWorking) disabled @endif>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
-        @endforeach
 
-        <button wire:click="addWorkBlock">Adicionar outro bloco de horário</button>
+        </div>
+        <br>
+        <div class="d-flex justify-content-end">
+            <button wire:click="saveScheduleForDay" class="btn btn-gradient-primary mb-2 " >Salvar</button>
+            <button wire:click="deleteSelectedDays" class="btn btn-secondary mb-2 ms-1" @if(empty($selectedDays)) disabled @endif>Deletar</button>
+        </div>
 
-        <button wire:click="saveScheduleForDay">Salvar para dias selecionados</button>
     </div>
+
+    </div>
+</div>
+
+</div>
 
 
     @if (session()->has('message'))

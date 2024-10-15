@@ -30,7 +30,6 @@ class Horarios extends Component
         $this->loadMonthData();
         $this->loadSchedules();
     }
-
     public function loadMonthData()
     {
         $this->daysInMonth = Carbon::create($this->currentYear, $this->currentMonth, 1)->daysInMonth;
@@ -42,14 +41,26 @@ class Horarios extends Component
     }
     public function loadSchedules()
     {
-        // Carrega os horários do usuário autenticado
         $this->schedules = WorkSchedule::where('user_id', Auth::id())
             ->whereMonth('day_of_week', $this->currentMonth)
             ->whereYear('day_of_week', $this->currentYear)
             ->get()
-            ->groupBy('day_of_week')  // Agrupar por dia para obter arrays
+            ->groupBy('day_of_week')
             ->toArray();
     }
+    public function deleteSelectedDays()
+    {
+        foreach ($this->selectedDays as $selectedDay) {
+            WorkSchedule::where('user_id', Auth::id())
+                ->where('day_of_week', $selectedDay)
+                ->delete();
+        }
+        $this->selectedDays = [];
+
+        $this->loadSchedules();
+        session()->flash('message', 'Horários deletados com sucesso para os dias selecionados!');
+    }
+
 
 
     public function previousMonth()
@@ -79,10 +90,9 @@ class Horarios extends Component
         $selectedDate = Carbon::create($this->currentYear, $this->currentMonth, $day)->format('Y-m-d');
 
         if (in_array($selectedDate, $this->selectedDays)) {
-            // Remove o dia se já estiver selecionado
+
             $this->selectedDays = array_diff($this->selectedDays, [$selectedDate]);
         } else {
-            // Adiciona o dia ao array de dias selecionados
             $this->selectedDays[] = $selectedDate;
         }
     }
@@ -94,7 +104,7 @@ class Horarios extends Component
         foreach ($this->workBlocks as $index => $block) {
             $existingSchedule = WorkSchedule::where('user_id', Auth::id())
                 ->where('day_of_week', $selectedDay)
-                ->where('schedule_block', $index + 1) // Identificando o bloco
+                ->where('schedule_block', $index + 1)
                 ->first();
 
             if ($existingSchedule) {
@@ -110,7 +120,7 @@ class Horarios extends Component
                     'start_time' => $block['start_time'],
                     'end_time' => $block['end_time'],
                     'is_working' => $this->isWorking,
-                    'schedule_block' => $index + 1, // Definindo o bloco de horário
+                    'schedule_block' => $index + 1,
                 ]);
             }
         }

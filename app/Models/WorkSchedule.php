@@ -14,9 +14,9 @@ class WorkSchedule extends Model
         'start_time',
         'end_time',
         'is_working',
+        'schedule_block',
     ];
 
-    // Relacionamento com o usuário
     public function user()
     {
         return $this->belongsTo(User::class);

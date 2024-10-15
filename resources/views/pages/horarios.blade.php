@@ -4,7 +4,7 @@
     <div class="page-header">
         <h3 class="page-title">
         <span class="page-title-icon bg-gradient-primary text-white me-2">
-            <i class="fa fa-building-o"></i>
+            <i class="fa fa-calendar"></i>
         </span> Horários
         </h3>
         <nav aria-label="breadcrumb">
