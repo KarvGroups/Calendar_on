@@ -17,6 +17,11 @@ class Horarios extends Component
     public $isWorking = true;
     public $start_time;
     public $end_time;
+    public $selectedDays = [];
+
+    public $workBlocks = [
+        ['start_time' => '', 'end_time' => ''],
+    ];
 
     public function mount()
     {
@@ -31,7 +36,10 @@ class Horarios extends Component
         $this->daysInMonth = Carbon::create($this->currentYear, $this->currentMonth, 1)->daysInMonth;
         $this->startDayOfMonth = Carbon::create($this->currentYear, $this->currentMonth, 1)->dayOfWeek;
     }
-
+    public function addWorkBlock()
+    {
+        $this->workBlocks[] = ['start_time' => '', 'end_time' => ''];
+    }
     public function loadSchedules()
     {
         // Carrega os horários do usuário autenticado
@@ -39,9 +47,10 @@ class Horarios extends Component
             ->whereMonth('day_of_week', $this->currentMonth)
             ->whereYear('day_of_week', $this->currentYear)
             ->get()
-            ->keyBy('day_of_week')
+            ->groupBy('day_of_week')  // Agrupar por dia para obter arrays
             ->toArray();
     }
+
 
     public function previousMonth()
     {
@@ -67,50 +76,51 @@ class Horarios extends Component
 
     public function selectDay($day)
     {
-        $this->selectedDay = Carbon::create($this->currentYear, $this->currentMonth, $day)->format('Y-m-d');
+        $selectedDate = Carbon::create($this->currentYear, $this->currentMonth, $day)->format('Y-m-d');
 
-        // Verifica se já existe um horário para esse dia
-        $existingSchedule = WorkSchedule::where('user_id', Auth::id())
-            ->where('day_of_week', $this->selectedDay)
-            ->first();
-
-        if ($existingSchedule) {
-            $this->start_time = $existingSchedule->start_time;
-            $this->end_time = $existingSchedule->end_time;
-            $this->isWorking = $existingSchedule->is_working;
+        if (in_array($selectedDate, $this->selectedDays)) {
+            // Remove o dia se já estiver selecionado
+            $this->selectedDays = array_diff($this->selectedDays, [$selectedDate]);
         } else {
-            $this->start_time = '';
-            $this->end_time = '';
-            $this->isWorking = true; // Por padrão, assume que vai trabalhar
+            // Adiciona o dia ao array de dias selecionados
+            $this->selectedDays[] = $selectedDate;
         }
     }
+
 
     public function saveScheduleForDay()
-    {
-        $existingSchedule = WorkSchedule::where('user_id', Auth::id())
-            ->where('day_of_week', $this->selectedDay)
-            ->first();
+{
+    foreach ($this->selectedDays as $selectedDay) {
+        foreach ($this->workBlocks as $index => $block) {
+            $existingSchedule = WorkSchedule::where('user_id', Auth::id())
+                ->where('day_of_week', $selectedDay)
+                ->where('schedule_block', $index + 1) // Identificando o bloco
+                ->first();
 
-        if ($existingSchedule) {
-            $existingSchedule->update([
-                'start_time' => $this->start_time,
-                'end_time' => $this->end_time,
-                'is_working' => $this->isWorking,
-            ]);
-        } else {
-            WorkSchedule::create([
-                'user_id' => Auth::id(),
-                'day_of_week' => $this->selectedDay,
-                'start_time' => $this->start_time,
-                'end_time' => $this->end_time,
-                'is_working' => $this->isWorking,
-            ]);
+            if ($existingSchedule) {
+                $existingSchedule->update([
+                    'start_time' => $block['start_time'],
+                    'end_time' => $block['end_time'],
+                    'is_working' => $this->isWorking,
+                ]);
+            } else {
+                WorkSchedule::create([
+                    'user_id' => Auth::id(),
+                    'day_of_week' => $selectedDay,
+                    'start_time' => $block['start_time'],
+                    'end_time' => $block['end_time'],
+                    'is_working' => $this->isWorking,
+                    'schedule_block' => $index + 1, // Definindo o bloco de horário
+                ]);
+            }
         }
-
-        $this->loadSchedules();
-
-        session()->flash('message', 'Horário atualizado com sucesso!');
     }
+
+    $this->loadSchedules();
+
+    session()->flash('message', 'Horários atualizados com sucesso para os dias selecionados!');
+}
+
 
     public function render()
     {

@@ -54,6 +54,10 @@
 .selected-day-form input[type="time"] {
     margin: 5px 0;
 }
+.selected-day {
+    border: 2px solid #000; /* Exemplo: borda preta */
+    background-color: #d3d3d3; /* Exemplo: fundo mais escuro */
+}
 
     </style>
     <h3>Gerenciar Horários de Trabalho</h3>
@@ -85,39 +89,48 @@
                     $date = Carbon\Carbon::create($currentYear, $currentMonth, $day)->format('Y-m-d');
                     $schedule = $schedules[$date] ?? null;
                 @endphp
-                <div class="day @if($schedule && $schedule['is_working']) work-day @elseif($schedule && !$schedule['is_working']) no-work-day @endif" wire:click="selectDay({{ $day }})">
+                <div class="day @if(in_array(Carbon\Carbon::create($currentYear, $currentMonth, $day)->format('Y-m-d'), $selectedDays)) selected-day @endif" wire:click="selectDay({{ $day }})">
                     <span>{{ $day }}</span>
-                    @if($schedule)
-                        @if($schedule['is_working'])
-                            <div>{{ $schedule['start_time'] }} - {{ $schedule['end_time'] }}</div>
-                        @else
-                            <div>Não trabalha</div>
-                        @endif
+                    @if(isset($schedules[$date]))
+                        @foreach((array)$schedules[$date] as $schedule) <!-- Forçando como array -->
+                            @if($schedule['is_working'])
+                                <div>{{ $schedule['start_time'] }} - {{ $schedule['end_time'] }}</div>
+                            @else
+                                <div>Não trabalha</div>
+                            @endif
+                        @endforeach
                     @endif
+
+
                 </div>
             @endfor
         </div>
     </div>
 
     <!-- Detalhes do Dia Selecionado -->
-    @if ($selectedDay)
-    <div class="selected-day-form">
-        <h4>Horários para o dia: {{ $selectedDay }}</h4>
 
-        <label>Trabalhar neste dia?</label>
+    <div class="selected-day-form">
+        <h4>Horários para os dias selecionados: {{ implode(', ', $selectedDays) }}</h4>
+
+        <label>Trabalhar nesses dias?</label>
         <input type="checkbox" wire:model="isWorking"> Sim/Não
 
-        <div>
-            <label>Hora de Início:</label>
-            <input type="time" wire:model="start_time" @if(!$isWorking) disabled @endif>
+        <!-- Loop para adicionar múltiplos horários -->
+        @foreach($workBlocks as $index => $block)
+            <div>
+                <label>Hora de Início (Bloco {{ $index + 1 }}):</label>
+                <input type="time" wire:model="workBlocks.{{ $index }}.start_time" @if(!$isWorking) disabled @endif>
 
-            <label>Hora de Término:</label>
-            <input type="time" wire:model="end_time" @if(!$isWorking) disabled @endif>
+                <label>Hora de Término (Bloco {{ $index + 1 }}):</label>
+                <input type="time" wire:model="workBlocks.{{ $index }}.end_time" @if(!$isWorking) disabled @endif>
+            </div>
+        @endforeach
 
-            <button wire:click="saveScheduleForDay">Salvar</button>
-        </div>
+        <button wire:click="addWorkBlock">Adicionar outro bloco de horário</button>
+
+        <button wire:click="saveScheduleForDay">Salvar para dias selecionados</button>
     </div>
-    @endif
+
 
     @if (session()->has('message'))
         <div>{{ session('message') }}</div>
