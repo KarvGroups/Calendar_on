@@ -10,18 +10,115 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <link href="{{asset('assets/vendors/mdi/css/materialdesignicons.min.css')}}" rel="stylesheet">
+        <link href="{{asset('assets/vendors/ti-icons/css/themify-icons.css')}}" rel="stylesheet">
+        <link href="{{asset('assets/vendors/css/vendor.bundle.base.css')}}" rel="stylesheet">
+        <link href="{{asset('assets/vendors/font-awesome/css/font-awesome.min.css')}}" rel="stylesheet">
+
+        <!-- endinject -->
+        <!-- Plugin css for this page -->
+        <link href="{{asset('assets/vendors/font-awesome/css/font-awesome.min.css')}}" rel="stylesheet">
+
+        <link href="{{asset('assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.css')}}" rel="stylesheet">
+
+        <!-- End plugin css for this page -->
+        <!-- inject:css -->
+        <!-- endinject -->
+        <!-- Layout styles -->
+        <link href="{{asset('assets/css/style.css')}}" rel="stylesheet">
+
+        <!-- End layout styles -->
+        <link href="{{asset('assets/images/favicon.png')}}" rel="shortcut icon">
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
         <!-- Styles -->
         @livewireStyles
+        <style>
+            /* Estilos básicos para a navbar */
+            body {
+                font-family: 'Figtree', sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+
+            .navbar {
+                background-color: #333;
+                overflow: hidden;
+                position: fixed;
+                top: 0;
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                color: white;
+            }
+
+            .navbar a {
+                color: white;
+                text-align: center;
+                padding: 16px 23px;
+                text-decoration: none;
+                font-size: 17px;
+            }
+
+            .navbar a:hover {
+                background-color: #ddd;
+                color: black;
+            }
+
+            .navbar-right {
+                display: flex;
+            }
+
+            /* Adiciona um espaço no topo do conteúdo para que ele não fique atrás da navbar */
+            .content {
+                padding-top: 60px;
+            }
+        </style>
     </head>
     <body>
-        <div class="font-sans text-gray-900 antialiased">
+        <div class="navbar">
+            <!-- Link para a home ou página inicial -->
+            <a href="{{ url('/') }}">Home</a>
+
+            <!-- Links de login, register e dashboard -->
+            <div class="navbar-right">
+                @if (Route::has('login'))
+                    @auth
+                        <a href="{{ url('/dashboard') }}">Dashboard</a>
+                    @else
+                        <a href="{{ route('login') }}">Log in</a>
+                        @if (Route::has('register'))
+                            <a href="{{ route('register') }}">Register</a>
+                        @endif
+                    @endauth
+                @endif
+            </div>
+        </div>
+        <div class="content">
             {{ $slot }}
         </div>
 
         @livewireScripts
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <script src="{{asset('assets/vendors/js/vendor.bundle.base.js')}}"></script>
+        <!-- endinject -->
+        <!-- Plugin js for this page -->
+        <script src="{{asset('assets/vendors/chart.js/chart.umd.js')}}"></script>
+
+        <script src="{{asset('assets/vendors/bootstrap-datepicker/bootstrap-datepicker.min.js')}}"></script>
+
+        <!-- End plugin js for this page -->
+        <!-- inject:js -->
+        <script src="{{asset('assets/js/off-canvas.js')}}"></script>
+        <script src="{{asset('assets/js/misc.js')}}"></script>
+        <script src="{{asset('assets/js/settings.js')}}"></script>
+        <script src="{{asset('assets/js/todolist.js')}}"></script>
+        <script src="{{asset('assets/js/jquery.cookie.js')}}"></script>
+        <!-- endinject -->
+        <!-- Custom js for this page -->
+        <script src="{{asset('assets/js/dashboard.js')}}"></script>
     </body>
 </html>

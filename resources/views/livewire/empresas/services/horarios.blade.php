@@ -173,9 +173,8 @@
                     <label>Trabalhar nesses dias?</label>
 
                     <div class="form-check">
-
                         <label class="form-check-label">
-                            <input type="checkbox" class="form-check-primary" wire:model="isWorking" checked> Sim/Não
+                            <input type="checkbox" class="form-check-primary" wire:model="isWorking"> Sim/Não
                         </label>
                     </div>
                 </div>

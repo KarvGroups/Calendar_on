@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmpresasController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\AgendamentoController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -16,9 +17,14 @@ use App\Http\Controllers\EventController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+
+
+
+Route::get('/{empresa}', [AgendamentoController::class, 'index'])->name('agendamento');
+
 
 Route::middleware([
     'auth:sanctum',

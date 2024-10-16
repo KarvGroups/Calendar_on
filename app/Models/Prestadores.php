@@ -22,6 +22,7 @@ class Prestadores extends Model
         'status',
         'imagem',
         'data_criacao',
+        'url_marcacao',
         'create_at',
         'update_at'
     ];
