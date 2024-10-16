@@ -17,14 +17,11 @@ use App\Http\Controllers\AgendamentoController;
 |
 */
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
+Route::get('/', function () {
+    return view('welcome');
+});
 
-
-
-Route::get('/{empresa}', [AgendamentoController::class, 'index'])->name('agendamento');
-
+Route::get('/agendamento/{empresa}', [AgendamentoController::class, 'index'])->name('agendamento');
 
 Route::middleware([
     'auth:sanctum',

@@ -10,9 +10,8 @@ class AgendamentoController extends Controller
 {
     public function index($empresa)
     {
-
         $company = Prestadores::where('url_marcacao', $empresa)->firstOrFail();
-        // dd( $company["id"]);
+
         $users = User::where('id_prestadores', $company["id"])->get();
 
         return view('welcome', compact('users', 'company'));

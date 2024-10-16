@@ -93,7 +93,14 @@
             </div>
         </div>
         <div class="content">
+            @if(isset($users) && $users->isNotEmpty())
             @livewire('agendamento-form', ['users' => $users, 'company' => $company])
+        @else
+            <p>Não tem usuário selecionado!</p>
+        @endif
+
+
+
         </div>
 
         @livewireScripts
