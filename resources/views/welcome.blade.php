@@ -51,6 +51,7 @@
                 display: flex;
                 justify-content: space-between;
                 color: white;
+                z-index: 1;
             }
 
             .navbar a {
@@ -96,7 +97,7 @@
             @if(isset($users) && $users->isNotEmpty())
             @livewire('agendamento-form', ['users' => $users, 'company' => $company])
         @else
-            <p>Não tem usuário selecionado!</p>
+            <p>Não tem usuário para selecionar!</p>
         @endif
 
 
