@@ -75,6 +75,7 @@ return [
         'contribuinteEmpresa' => 'Contribuinte da Empresa',
         'imagemEmpresa' => 'Imagem da Empresa',
         'statusEmpresa' => 'Status da Empresa',
+        'linkCalendarEmpresa' => 'Url do calendario de marcação',
         'data_criacaoEmpresa' => 'Data de Criação da Empresa',
 
         'nomeUsuario' => 'Nome do Usuário',

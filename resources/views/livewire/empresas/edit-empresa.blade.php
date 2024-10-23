@@ -1,4 +1,12 @@
 <div>
+    <style>
+        #urlExample{
+            background-color: #f0932b;
+            color: white;
+            padding: 10px 12px;
+            border-radius: 25px;
+        }
+    </style>
     <div class="col-12 grid-margin">
         <div class="card">
             <div class="card-body">
@@ -72,10 +80,22 @@
 
                         </div>
                     </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="col-form-label">Url do calendário de marcação</label>
+
+                            <input type="text" id="linkCalendarEmpresa" wire:model="linkCalendarEmpresa" class="form-control" placeholder="Digite o nome" />
+                            @error('linkCalendarEmpresa')
+                                <span class="text-red-500">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <a href="{{ env('APP_URL')."/".$linkCalendarEmpresa}}"><strong id="urlExample">{{ env('APP_URL') }}/</strong></a>
+                    </div>
                 </div>
                 <div class="d-flex justify-content-end">
                     <button wire:click="atualizar" class="btn btn-gradient-primary mb-2">Salvar Alterações</button>
                 </div>
+
             </div>
         </div>
     </div>
@@ -259,13 +279,46 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(function() {
+                const input = document.getElementById('linkCalendarEmpresa');
+                const urlExample = document.getElementById('urlExample');
+                const envUrl = "{{ env('APP_URL') }}";
+                console.log(envUrl);
+                const updateUrl = () => {
+                    const inputValue = input.value.trim();
+                    urlExample.textContent = `${envUrl}/${inputValue}`;
+                };
+                input.addEventListener('input', updateUrl);
+                if (input.value) {
+                    updateUrl();
+                }
+            }, 100);
+        });
+        function updateCalendarUrl() {
+            setTimeout(function() {
+                const input = document.getElementById('linkCalendarEmpresa');
+                const urlExample = document.getElementById('urlExample');
+                const envUrl = "{{ env('APP_URL') }}";
+                const updateUrl = () => {
+                    const inputValue = input.value.trim();
+                    urlExample.textContent = `${envUrl}/${inputValue}`;
+                };
+                input.addEventListener('input', updateUrl);
+                if (input.value) {
+                    updateUrl();
+                }
+            });
+        }
         window.addEventListener('alert', event => {
+
             Swal.fire({
                 title: 'Sucesso!',
                 text: event.detail.message,
                 icon: 'success',
                 confirmButtonText: 'OK'
             });
+            updateCalendarUrl();
         });
     </script>
 </div>

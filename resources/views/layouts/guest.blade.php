@@ -81,8 +81,8 @@
     <body>
         <div class="navbar">
             <!-- Link para a home ou página inicial -->
-            <a href="{{ url('/') }}">Home</a>
-
+            {{-- <a href="{{ url('/') }}">Home</a> --}}
+            <div></div>
             <!-- Links de login, register e dashboard -->
             <div class="navbar-right">
                 @if (Route::has('login'))

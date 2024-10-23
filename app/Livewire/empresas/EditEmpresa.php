@@ -17,6 +17,8 @@ class EditEmpresa extends Component
     public ?string $imagemEmpresa = "";
     public ?string $data_criacaoEmpresa = "";
     public ?string $statusEmpresa = "";
+    public ?string $linkCalendarEmpresa = "";
+
 
     public ?string $nome = "";
     public ?string $apelido = "";
@@ -44,7 +46,7 @@ class EditEmpresa extends Component
         $this->funcionarios = User::where("id_prestadores", $this->empresa->id)->get();
 
         // dd($this->funcionarios);
-
+        $this->linkCalendarEmpresa = $this->empresa->url_marcacao;
         $this->statusEmpresa = $this->empresa->status;
         $this->nomeEmpresa = $this->empresa->nome;
         $this->emailEmpresa = $this->empresa->email;
@@ -64,6 +66,7 @@ class EditEmpresa extends Component
             'enderecoEmpresa' => 'required|string|max:255',
             'contactoEmpresa' => 'required|string|max:20',
             'statusEmpresa' => 'required|string|max:255',
+            'linkCalendarEmpresa' => 'required|string|max:255',
             'especializacaoEmpresa' => 'nullable|string|max:255',
             'contribuinteEmpresa' => 'required|string|max:50|unique:Prestadores,contribuinte,' . $this->empresa->id,
             'imagemEmpresa' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -80,6 +83,7 @@ class EditEmpresa extends Component
                 'especializacao' => $this->especializacaoEmpresa,
                 'contribuinte' => $this->contribuinteEmpresa,
                 'status' => $this->statusEmpresa,
+                'url_marcacao' => $this->linkCalendarEmpresa,
                 'imagem' => $this->imagemEmpresa,
                 'data_criacao' => $this->data_criacaoEmpresa,
             ]);

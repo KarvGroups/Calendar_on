@@ -17,11 +17,7 @@ use App\Http\Controllers\AgendamentoController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
 
-Route::get('/agendamento/{empresa}', [AgendamentoController::class, 'index'])->name('agendamento');
 
 Route::middleware([
     'auth:sanctum',
@@ -38,7 +34,8 @@ Route::middleware([
     Route::get('/service/category', [ServiceController::class, 'index'])->name('service.category');
     Route::get('/service/horarios', [ServiceController::class, 'indexHorarios'])->name('service.horarios');
 
-
-
-
+    Route::get('/', function () {return view('welcome');});
 });
+
+
+Route::get('/{empresa}', [AgendamentoController::class, 'index']);

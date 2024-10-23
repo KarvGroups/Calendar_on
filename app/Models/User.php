@@ -68,6 +68,6 @@ class User extends Authenticatable
 
     public function prestador()
     {
-        return $this->belongsTo(Prestador::class, 'id_prestadores');
+        return $this->belongsTo(prestadores::class, 'id_prestadores');
     }
 }

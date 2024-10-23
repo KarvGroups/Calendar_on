@@ -77,8 +77,8 @@
     </head>
     <body>
         <div class="navbar">
-            <a href="{{ url('/') }}">Home</a>
-
+            {{-- <a href="{{ url('/') }}">Home</a> --}}
+            <div></div>
             <div class="navbar-right">
                 @if (Route::has('login'))
                     @auth

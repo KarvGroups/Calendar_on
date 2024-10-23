@@ -8,7 +8,7 @@
           <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
             <span class="mdi mdi-menu"></span>
           </button>
-          
+
           <ul class="navbar-nav navbar-nav-right">
             <li class="nav-item nav-profile dropdown">
               <a class="nav-link dropdown-toggle" id="profileDropdown" href="{{ route('dashboard') }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -151,9 +151,9 @@
                 <i class="mdi mdi-power"></i>
               </a>
             </li>
-            <li class="nav-item nav-settings d-none d-lg-block">
-              <a class="nav-link" href="#">
-                <i class="mdi mdi-format-line-spacing"></i>
+            <li class="nav-item nav-calendar">
+              <a class="nav-link" href="{{ env('APP_URL')."/".Auth::user()->prestador->url_marcacao}}">
+                <i class="fa fa-calendar"></i>
               </a>
             </li>
           </ul>
