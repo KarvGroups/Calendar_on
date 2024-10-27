@@ -8,6 +8,7 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
         <link href="{{asset('assets/vendors/mdi/css/materialdesignicons.min.css')}}" rel="stylesheet">
         <link href="{{asset('assets/vendors/ti-icons/css/themify-icons.css')}}" rel="stylesheet">
         <link href="{{asset('assets/vendors/css/vendor.bundle.base.css')}}" rel="stylesheet">
@@ -31,7 +32,7 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-        @livewireStyles
+  
 
         <!-- Styles -->
         <style>
@@ -104,7 +105,6 @@
 
         </div>
 
-        @livewireScripts
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
         <script src="{{asset('assets/vendors/js/vendor.bundle.base.js')}}"></script>
         <!-- endinject -->

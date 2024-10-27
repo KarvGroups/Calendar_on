@@ -2,201 +2,138 @@
 
 namespace App\Livewire\empresas\services;
 
-use App\Models\Category;
 use App\Models\Service;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 
 class CategoryServices extends Component
 {
-    public $status;
-    public $title;
-    public $GrupCategory;
+    protected $listeners = ['ServiceOrder'];
     public $serviceTitle;
     public $servicePrice;
     public $serviceTime;
-    public $selectedCategoryId;
-    public $isEditingCategory = false;
+    public $status = 'active';
+
     public $isEditingService = false;
-    public $selectedServiceId;
+    public $selectedServiceId = null;
+    public $services;
+
+
 
     public function mount()
     {
-        $this->loadCategories();
+        $this->loadServices();
     }
 
-    public function loadCategories()
+    public function loadServices()
     {
-        $this->GrupCategory = Category::where('id_empresa', Auth::user()->id_prestadores)
-            ->where('id_user', Auth::user()->id)
-            ->with('services')
-            ->get();
+        // Carrega todos os serviços do usuário autenticado
+        $this->services = Service::where('id_user', Auth::user()->id)->orderBy('order')->get();
     }
 
-    public function createCategory()
+    public function ServiceOrder($orderedIds)
     {
-        $this->validate([
-            'title' => 'required|string|max:250',
-        ]);
-
-        Category::create([
-            'title' => $this->title,
-            'id_user' => Auth::user()->id,
-            'id_services' => null,
-            'id_empresa' => Auth::user()->id_prestadores,
-            'status' => 'active',
-        ]);
-
-        $this->title = '';
-        $this->loadCategories();
+        foreach ($orderedIds as $index => $id) {
+            Service::where('id', $id)->update(['order' => $index + 1]);
+        }
+        $this->loadServices(); // Atualiza a lista após salvar a nova ordem
+        session()->flash('success', 'Ordem salva com sucesso!');
     }
+
     public function createService()
     {
         $this->validate([
             'serviceTitle' => 'required|string|max:250',
             'servicePrice' => 'required|numeric',
-            'serviceTime' => 'required',
-            'selectedCategoryId' => 'required|exists:categorias,id',
+            'serviceTime' => 'required|integer',
         ]);
 
         Service::create([
             'title' => $this->serviceTitle,
             'price' => $this->servicePrice,
             'time' => $this->serviceTime,
-            'status' => "active",
-            'id_categorias' => $this->selectedCategoryId,
+            'status' => $this->status,
             'id_empresa' => Auth::user()->id_prestadores,
             'id_user' => Auth::user()->id,
+            'order' => Service::where('id_user', Auth::user()->id)->max('order') + 1,
         ]);
 
-        $this->serviceTitle = '';
-        $this->servicePrice = '';
-        $this->serviceTime = '';
-        $this->loadCategories();
+        $this->resetForm();
+        $this->loadServices();
+        session()->flash('success', 'Serviço criado com sucesso.');
     }
-
-    public function editCategory($categoryId)
-    {
-        $this->cancelEditService();
-
-        $this->isEditingCategory = true;
-        $this->isEditingService = false;
-        $this->selectedCategoryId = $categoryId;
-        $category = Category::find($categoryId);
-        $this->title = $category->title;
-        $this->status = $category->status;
-    }
-
-    public function updateCategory()
-    {
-        $this->validate([
-            'title' => 'required|string|max:250',
-            'status' => 'required|string',
-        ]);
-
-        $category = Category::find($this->selectedCategoryId);
-        $category->update([
-            'title' => $this->title,
-            'status' => $this->status,
-        ]);
-
-        $this->title = '';
-        $this->status = '';
-        $this->isEditingCategory = false;
-        $this->loadCategories();
-    }
-
 
     public function editService($serviceId)
     {
-        $this->cancelEditCategory();
+        $this->cancelEditService();
 
         $this->isEditingService = true;
-        $this->isEditingCategory = false;
         $this->selectedServiceId = $serviceId;
-        $service = Service::find($serviceId);
-        $this->serviceTitle = $service->title;
-        $this->servicePrice = $service->price;
-        $this->serviceTime = $service->time;
-        $this->status = $service->status;
-    }
 
+        $service = Service::find($serviceId);
+        if ($service) {
+            $this->serviceTitle = $service->title;
+            $this->servicePrice = $service->price;
+            $this->serviceTime = $service->time;
+            $this->status = $service->status;
+        }
+    }
 
     public function updateService()
     {
         $this->validate([
             'serviceTitle' => 'required|string|max:250',
             'servicePrice' => 'required|numeric',
-            'serviceTime' => 'required',
+            'serviceTime' => 'required|integer',
             'status' => 'required|string',
         ]);
 
         $service = Service::find($this->selectedServiceId);
-        $service->update([
-            'title' => $this->serviceTitle,
-            'price' => $this->servicePrice,
-            'time' => $this->serviceTime,
-            'status' => $this->status,
-        ]);
+        if ($service) {
+            $service->update([
+                'title' => $this->serviceTitle,
+                'price' => $this->servicePrice,
+                'time' => $this->serviceTime,
+                'status' => $this->status,
+            ]);
 
-        $this->serviceTitle = '';
-        $this->servicePrice = '';
-        $this->serviceTime = '';
-        $this->status = '';
-        $this->isEditingService = false;
-        $this->loadCategories();
+            $this->resetForm();
+            $this->loadServices();
+            session()->flash('success', 'Serviço atualizado com sucesso.');
+        }
+    }
+
+    public function deleteService($serviceId)
+    {
+        $service = Service::find($serviceId);
+        if ($service) {
+            $service->delete();
+            session()->flash('success', 'Serviço deletado com sucesso.');
+            $this->loadServices();
+        } else {
+            session()->flash('error', 'Serviço não encontrado.');
+        }
     }
 
     public function cancelEditService()
     {
+        $this->resetForm();
         $this->isEditingService = false;
         $this->selectedServiceId = null;
+    }
+
+    private function resetForm()
+    {
         $this->serviceTitle = '';
         $this->servicePrice = '';
         $this->serviceTime = '';
+        $this->status = 'active';
     }
-
-    public function cancelEditCategory()
-    {
-        $this->isEditingCategory = false;
-        $this->selectedCategoryId = null;
-        $this->title = '';
-    }
-
-    public function deleteCategory($categoryId)
-{
-    $category = Category::find($categoryId);
-
-    if ($category) {
-        $category->services()->delete();
-
-        $category->delete();
-
-        session()->flash('success', 'Categoria e seus serviços foram deletados com sucesso.');
-    } else {
-        session()->flash('error', 'Categoria não encontrada.');
-    }
-
-    $this->loadCategories();
-}
-public function deleteService($serviceId)
-{
-    $service = Service::find($serviceId);
-
-    if ($service) {
-        $service->delete();
-
-        session()->flash('success', 'Serviço deletado com sucesso.');
-    } else {
-        session()->flash('error', 'Serviço não encontrado.');
-    }
-
-    $this->loadCategories();
-}
-
 
     public function render()
     {
-        return view('livewire.empresas.services.category');
+        return view('livewire.empresas.services.category', [
+            'services' => $this->services,
+        ]);
     }
 }
