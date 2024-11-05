@@ -17,7 +17,7 @@ class CategoryServices extends Component
     public $isEditingService = false;
     public $selectedServiceId = null;
     public $services;
-
+    public $orderedIds;
 
 
     public function mount()
@@ -30,15 +30,19 @@ class CategoryServices extends Component
         // Carrega todos os serviços do usuário autenticado
         $this->services = Service::where('id_user', Auth::user()->id)->orderBy('order')->get();
     }
-
-    public function ServiceOrder($orderedIds)
+    public function ServiceOrder()
     {
+        $orderedIds = explode(',', $this->orderedIds);
+
         foreach ($orderedIds as $index => $id) {
             Service::where('id', $id)->update(['order' => $index + 1]);
         }
-        $this->loadServices(); // Atualiza a lista após salvar a nova ordem
-        session()->flash('success', 'Ordem salva com sucesso!');
+
+        $this->loadServices();
+        $this->message = "Ordem salva com sucesso!";
+        $this->dispatch('alert', ['type' => 'success', 'message' => $this->message]);
     }
+
 
     public function createService()
     {
@@ -60,7 +64,8 @@ class CategoryServices extends Component
 
         $this->resetForm();
         $this->loadServices();
-        session()->flash('success', 'Serviço criado com sucesso.');
+        $this->message = "Serviço criado com sucesso.";
+        $this->dispatch('alert', ['type' => 'success', 'message' => $this->message]);
     }
 
     public function editService($serviceId)

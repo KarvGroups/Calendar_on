@@ -64,7 +64,6 @@
         @stack('modals')
 
 
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
         <script src="{{asset('assets/vendors/js/vendor.bundle.base.js')}}"></script>
         <!-- endinject -->
         <!-- Plugin js for this page -->
@@ -81,6 +80,6 @@
         <script src="{{asset('assets/js/jquery.cookie.js')}}"></script>
         <!-- endinject -->
         <!-- Custom js for this page -->
-        <script src="{{asset('assets/js/dashboard.js')}}"></script>
+        {{-- <script src="{{asset('assets/js/dashboard.js')}}"></script> --}}
     </body>
 </html>
