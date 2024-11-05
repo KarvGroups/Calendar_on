@@ -70,7 +70,6 @@
                 icon: 'success',
                 confirmButtonText: 'OK'
             });
-            updateCalendarUrl();
         });
     </script>
 </div>
