@@ -23,11 +23,11 @@ class CategoryServices extends Component
     public function mount()
     {
         $this->loadServices();
+        $this->orderedIds = implode(',', $this->services->pluck('id')->toArray());
     }
 
     public function loadServices()
     {
-        // Carrega todos os serviços do usuário autenticado
         $this->services = Service::where('id_user', Auth::user()->id)->orderBy('order')->get();
     }
     public function ServiceOrder()
@@ -42,6 +42,18 @@ class CategoryServices extends Component
         $this->message = "Ordem salva com sucesso!";
         $this->dispatch('alert', ['type' => 'success', 'message' => $this->message]);
     }
+    public function updateHierarchy($serviceId, $newParentId)
+    {
+        $service = Service::find($serviceId);
+        if ($service) {
+            $service->order_int = $newParentId ?: 0;
+            $service->save();
+        }
+
+        $this->loadServices();
+    }
+
+
 
 
     public function createService()
