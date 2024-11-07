@@ -46,16 +46,12 @@ class CategoryServices extends Component
     {
         $service = Service::find($serviceId);
         if ($service) {
-            $service->order_int = $newParentId ?: 0;
+            $service->order_int = ($newParentId == 0) ? 0 : $newParentId;
             $service->save();
         }
 
         $this->loadServices();
     }
-
-
-
-
     public function createService()
     {
         $this->validate([
