@@ -18,6 +18,8 @@ class CategoryServices extends Component
     public $selectedServiceId = null;
     public $services;
     public $orderedIds;
+    public $sublistOrderedIds = [];
+
 
 
     public function mount()
@@ -31,27 +33,55 @@ class CategoryServices extends Component
         $this->services = Service::where('id_user', Auth::user()->id)->orderBy('order')->get();
     }
     public function ServiceOrder()
-    {
-        $orderedIds = explode(',', $this->orderedIds);
-
-        foreach ($orderedIds as $index => $id) {
-            Service::where('id', $id)->update(['order' => $index + 1]);
+{
+    $orderedIds = explode(',', $this->orderedIds);
+    foreach ($orderedIds as $index => $id) {
+        $service = Service::find($id);
+        if ($service && $service->order_int == 0) {
+            $service->order = $index + 1;
+            $service->save();
         }
-
-        $this->loadServices();
-        $this->message = "Ordem salva com sucesso!";
-        $this->dispatch('alert', ['type' => 'success', 'message' => $this->message]);
     }
+    foreach ($this->sublistOrderedIds as $parentId => $orderedIds) {
+        $subOrderedIds = explode(',', $orderedIds);
+        foreach ($subOrderedIds as $index => $id) {
+            $service = Service::find($id);
+            if ($service && $service->order_int == $parentId) {
+                $service->order = $index + 1;
+                $service->save();
+            }
+        }
+    }
+
+    $this->loadServices();
+    $this->message = "Ordem salva com sucesso!";
+    $this->dispatch('alert', ['type' => 'success', 'message' => $this->message]);
+}
+
+
+
     public function updateHierarchy($serviceId, $newParentId)
     {
         $service = Service::find($serviceId);
+
         if ($service) {
             $service->order_int = ($newParentId == 0) ? 0 : $newParentId;
+
+            if ($newParentId == 0) {
+                $maxOrder = Service::where('id_user', Auth::user()->id)->where('order_int', 0)->max('order');
+                $service->order = $maxOrder + 1;
+            } else {
+                $maxOrderInParent = Service::where('id_user', Auth::user()->id)->where('order_int', $newParentId)->max('order');
+                $service->order = $maxOrderInParent + 1;
+            }
+
             $service->save();
         }
+        $this->ServiceOrder();
 
-        $this->loadServices();
+        // $this->loadServices();
     }
+
     public function createService()
     {
         $this->validate([
