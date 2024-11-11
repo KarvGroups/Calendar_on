@@ -17,7 +17,7 @@ class Service extends Model
         'time',
         'status',
         'order',
-        'order_int',
+        'id_categorias',
         'id_empresa',
         'id_user',
     ];

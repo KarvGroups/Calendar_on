@@ -17,6 +17,7 @@ class Category extends Model
         'id_services',
         'id_empresa',
         'status',
+        'order',
     ];
 
     public function services()

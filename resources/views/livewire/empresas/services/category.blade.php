@@ -1,122 +1,156 @@
 <div>
     <div class="card">
         <div class="card-body">
-            <h2 class="text-lg font-semibold mb-4">Serviços</h2>
-            <ul id="sortable-list" class="list-none">
-                @foreach ($services->where('order_int', 0) as $service)
-                    <li wire:key="service-{{ $service->id }}" data-id="{{ $service->id }}" data-parent="0" class="border-b py-2">
-                        <div class="flex justify-between">
-                            <div>{{ $service->title }}</div>
-                            <div>
-                                <button wire:click="editService({{ $service->id }})" class="btn btn-primary bg-yellow-500 text-white px-1 py-1 rounded">
-                                    <i class="fa fa-pencil"></i>
-                                </button>
-                                {{-- <button wire:click="deleteService({{ $service->id }})" class="btn btn-primary bg-red-500 text-white px-1 py-1 rounded">
-                                    <i class="fa fa-trash"></i>
-                                </button> --}}
-                            </div>
-                        </div>
-                        <ul class="sortable-sublist list-none pl-4" style="margin-left: 21px;">
-                            @foreach ($services->where('order_int', $service->id) as $subService)
-                                <li wire:key="sub-service-{{ $subService->id }}" data-order="{{ $service->order }}" data-id="{{ $subService->id }}" data-parent="{{ $service->id }}" class="border-b py-2">
-                                    <div class="flex justify-between">
-                                        <div>{{ $subService->title }} - {{ $subService->price }} € - {{ $subService->time }} min</div>
-                                        <div>
-                                            <button wire:click="editService({{ $subService->id }})" class="btn btn-primary bg-yellow-500 text-white px-1 py-1 rounded">
-                                                <i class="fa fa-pencil"></i>
-                                            </button>
-                                            {{-- <button wire:click="deleteService({{ $subService->id }})" class="btn btn-primary bg-red-500 text-white px-1 py-1 rounded">
-                                                <i class="fa fa-trash"></i>
-                                            </button> --}}
-                                        </div>
+            <h2 class="text-lg font-semibold mb-4">Adicionar Nova Categoria</h2>
+
+            <form wire:submit.prevent="createCategory">
+                <div class="mb-4">
+                    <label for="title" class="block text-sm font-medium text-gray-700">Título da Categoria</label>
+                    <input type="text" id="title" wire:model="title" class="mt-1 block w-full border rounded p-2" placeholder="Digite o nome da categoria">
+                    @error('title') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                </div>
+
+                <button type="submit" class="btn btn-primary bg-blue-500 text-white px-4 py-2 rounded">
+                    Adicionar Categoria
+                </button>
+            </form>
+
+            <h3 class="mt-6 text-lg font-semibold">Categorias</h3>
+
+            <table class="table table-striped">
+                <tbody>
+                @forelse ($GrupCategory as $category)
+                    <tr class="border-b table-secondary" data-id="{{ $category->id }}">
+                        <td class="handle py-2 cursor-move">☰</td> <!-- Ícone para arrastar -->
+                        <th class="py-2">{{ $category->title }}</th>
+                        <td class="py-2">{{ $category->status }}</td>
+                        <td class="py-2" style="width: 0;">
+                            <button wire:click="$set('selectedCategoryId', {{ $category->id }})" class="btn btn-primary bg-blue-500 text-white px-1 py-1 rounded"><i class="fa fa-plus"></i></button>
+                            <button wire:click="editCategory({{ $category->id }})" class="btn btn-primary bg-yellow-500 text-white px-1 py-1 rounded"><i class="fa fa-pencil"></i></button>
+                            <button wire:click="deleteCategory({{ $category->id }})" class="btn btn-primary bg-red-500 text-white px-1 py-1 rounded"><i class="fa fa-trash"></i></button>
+                        </td>
+                    </tr>
+
+                    @if ($selectedCategoryId == $category->id && $isEditingCategory)
+                        <tr class="border-b">
+                            <td colspan="3" >
+                                <form wire:submit.prevent="updateCategory" class="mt-2">
+                                    <div class="mb-2">
+                                        <input type="text" wire:model="title" class="w-full border p-2 rounded" placeholder="Atualizar Nome da Categoria"><br>
+                                        @error('title') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                                     </div>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </li>
-                @endforeach
-            </ul>
 
+                                    <div class="mb-2">
+                                        <label for="status" class="block text-sm font-medium text-gray-700">Status da Categoria</label>
+                                        <select id="status" wire:model="status" class="mt-1 block w-full border rounded p-2">
+                                            <option value="active">Ativo</option>
+                                            <option value="inactive">Inativo</option>
+                                        </select>
+                                    </div>
 
+                                    <button type="submit" class="btn btn-primary bg-blue-500 text-white px-4 py-2 rounded">Atualizar Categoria</button>
+                                    <button type="button" wire:click="cancelEditCategory" class="btn btn-secondary bg-gray-500 text-white px-4 py-2 rounded">Fechar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endif
 
-            <!-- Campo oculto para manter o `currentOrder` atualizado -->
-            <input type="hidden" wire:model.defer="orderedIds" id="orderedIds">
+                    @if ($selectedCategoryId == $category->id && !$isEditingCategory)
+                    <tr class="border-b">
+                        <td colspan="3">
+                            <form wire:submit.prevent="createService" class="mt-2">
+                                <div class="mb-2">
+                                    <input type="text" wire:model="serviceTitle" placeholder="Nome do Serviço" class="w-full border p-2 rounded">
+                                    @error('serviceTitle') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                </div>
+                                <div class="mb-2">
+                                    <input type="number" wire:model="servicePrice" placeholder="Preço" class="w-full border p-2 rounded">
+                                    @error('servicePrice') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                </div>
+                                <div class="mb-2">
+                                    <input type="number" wire:model="serviceTime" placeholder="Tempo de Serviço" class="w-full border p-2 rounded">
+                                    @error('serviceTime') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                </div>
+                                <button type="submit" class="btn btn-primary bg-blue-500 text-white px-4 py-2 rounded">Adicionar Serviço</button>
+                                <button type="button" wire:click="cancelEditCategory" class="btn btn-secondary bg-gray-500 text-white px-4 py-2 rounded">Fechar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    @endif
 
-            {{-- <button wire:click='ServiceOrder' class="btn btn-primary bg-green-500 text-white px-3 py-2 rounded mt-4">
-                Salvar Ordem
-            </button> --}}
+                    @if ($category->services->isNotEmpty())
+                    <tr>
+                        <td colspan="3" style="padding:0;padding-left: 30px;">
+                            <table class="bg-gray-100 my-1 w-full">
+                                <tbody>
+                                @foreach ($category->services as $service)
+                                    <tr class="border-b">
+                                        <td class="py-2">{{ $service->title }}</td>
+                                        <td class="py-2">{{ $service->time }}</td>
+                                        <td class="py-2">{{ $service->price }} €</td>
+                                        <td class="py-2">{{ $service->status }}</td>
+                                        <td class="py-2" style="width: 0;">
+                                            <button wire:click="editService({{ $service->id }})" class="btn btn-primary bg-yellow-500 text-white px-1 py-1 rounded"><i class="fa fa-pencil"></i></button>
+                                            <button wire:click="deleteService({{ $service->id }})" class="btn btn-primary bg-red-500 text-white px-1 py-1 rounded"><i class="fa fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+
+                                    @if ($selectedServiceId == $service->id && $isEditingService)
+                                    <tr class="border-b">
+                                        <td colspan="4">
+                                            <form wire:submit.prevent="updateService" class="mt-2">
+                                                <div class="mb-2">
+                                                    <input type="text" wire:model="serviceTitle" placeholder="Nome do Serviço" class="w-full border p-2 rounded">
+                                                    @error('serviceTitle') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                                </div>
+                                                <div class="mb-2">
+                                                    <input type="number" wire:model="servicePrice" placeholder="Preço" class="w-full border p-2 rounded">
+                                                    @error('servicePrice') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                                </div>
+                                                <div class="mb-2">
+                                                    <input type="number" wire:model="serviceTime" placeholder="Tempo de Serviço" class="w-full border p-2 rounded">
+                                                    @error('serviceTime') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label for="status" class="block text-sm font-medium text-gray-700">Status do Serviço</label>
+                                                    <select id="status" wire:model="status" class="mt-1 block w-full border rounded p-2">
+                                                        <option value="active">Ativo</option>
+                                                        <option value="inactive">Inativo</option>
+                                                    </select>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary bg-blue-500 text-white px-4 py-2 rounded">Atualizar Serviço</button>
+                                                <button type="button" wire:click="cancelEditService" class="btn btn-secondary bg-gray-500 text-white px-4 py-2 rounded">Fechar</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                @endforeach
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    @endif
+                @empty
+                    <tr>
+                        <td colspan="3" class="text-center text-gray-500">Nenhuma categoria encontrada.</td>
+                    </tr>
+                @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <script>
-       document.addEventListener('DOMContentLoaded', function () {
-        const sortableList = document.getElementById('sortable-list');
-
-        function setInitialOrder() {
-            const currentOrder = Array.from(sortableList.children).map(item => item.getAttribute('data-id'));
-            document.getElementById('orderedIds').value = currentOrder.join(',');
-            document.getElementById('orderedIds').dispatchEvent(new Event('input'));
-        }
-
-        setInitialOrder();
-
-        if (sortableList) {
-            Sortable.create(sortableList, {
-                group: 'services',
+        document.addEventListener('livewire:load', function () {
+            let el = document.querySelector('tbody');
+            let sortable = new Sortable(el, {
                 animation: 150,
-                fallbackOnBody: true,
+                handle: '.handle',
                 onEnd: function (event) {
-                    const currentOrder = Array.from(sortableList.children).map(item => item.getAttribute('data-id'));
-                    document.getElementById('orderedIds').value = currentOrder.join(',');
-                    document.getElementById('orderedIds').dispatchEvent(new Event('input'));
-
-                    const serviceId = event.item.getAttribute('data-id');
-
-                    let newParentId;
-                    if (event.to === sortableList) {
-
-                        newParentId = 0;
-                        event.item.setAttribute('data-parent', '0');
-                    } else {
-
-                        const newParentElement = event.item.closest('.sortable-sublist');
-                        newParentId = newParentElement ? newParentElement.closest('[data-id]').getAttribute('data-id') : 0;
-                        event.item.setAttribute('data-parent', newParentId);
-                    }
-                    @this.call('updateHierarchy', serviceId, newParentId);
+                    // Coletar IDs em nova ordem
+                    let orderedIds = Array.from(el.children).map(row => row.getAttribute('data-id'));
+                    @this.call('updateCategoryOrder', orderedIds);
                 }
-            });
-
-            document.querySelectorAll('.sortable-sublist').forEach(sublist => {
-                Sortable.create(sublist, {
-                    group: 'services',
-                    animation: 150,
-                    fallbackOnBody: true,
-                    onEnd: function (event) {
-                        const serviceId = event.item.getAttribute('data-id');
-                        const parentElement = event.to.closest('[data-id]');
-                        const newParentId = parentElement ? parentElement.getAttribute('data-id') : 0;
-                        if (newParentId === 0) {
-                            event.item.setAttribute('data-parent', '0');
-                        } else {
-                            event.item.setAttribute('data-parent', newParentId);
-                        }
-
-                        @this.call('updateHierarchy', serviceId, newParentId);
-                    }
-                });
-            });
-        }
-    });
-
-        window.addEventListener('alert', event => {
-            Swal.fire({
-                title: 'Sucesso!',
-                text: event.detail.message,
-                icon: 'success',
-                confirmButtonText: 'OK'
             });
         });
     </script>
