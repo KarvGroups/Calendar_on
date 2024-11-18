@@ -95,10 +95,12 @@
             </div>
         </div>
         <div class="content">
-            @if(isset($users) && $users->isNotEmpty())
-            @livewire('agendamento-form', ['users' => $users, 'company' => $company])
-        @else
-            <p>Não tem usuário para selecionar!</p>
+            @if(auth()->check())
+            @if(auth()->user())
+                @livewire('agendamento-form', ['users' => auth()->user()])
+            @else
+                <p>Não tem usuário para selecionar!</p>
+            @endif
         @endif
 
 

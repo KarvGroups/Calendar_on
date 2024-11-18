@@ -34,6 +34,7 @@ Route::middleware([
     Route::get('/service/category', [ServiceController::class, 'index'])->name('service.category');
     Route::get('/service/horarios', [ServiceController::class, 'indexHorarios'])->name('service.horarios');
 
+    
     Route::get('/', function () {return view('welcome');});
 });
 
