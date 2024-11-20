@@ -65,7 +65,7 @@
                 <div class="collapse" id="Service">
                     <ul class="nav flex-column sub-menu">
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('service.category') }}">Categorias</a>
+                            <a class="nav-link" href="{{ route('service.category') }}">Serviços</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('service.horarios') }}">Horários</a>

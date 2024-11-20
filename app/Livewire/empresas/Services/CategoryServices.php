@@ -11,6 +11,8 @@ class CategoryServices extends Component
 {
 
     public $services;
+    public $categorys;
+
 
     public function mount()
     {
@@ -27,12 +29,14 @@ class CategoryServices extends Component
 
     public function loadItens()
     {
+        $this->categorys = Category::where('id_user', Auth::user()->id)->orderBy('order')->get();
         $this->services = Service::where('id_user', Auth::user()->id)->orderBy('order')->get();
     }
 
     public function render()
     {
         return view('livewire.empresas.services.category', [
+            'categorys' => $this->categorys,
             'services' => $this->services,
         ]);
     }
