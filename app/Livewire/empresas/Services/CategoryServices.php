@@ -68,7 +68,6 @@ class CategoryServices extends Component
             'selectedServiceData.price' => 'required|numeric|min:0',
             'selectedServiceData.time' => 'required|numeric|min:1',
             'selectedServiceData.status' => 'required|in:active,inactive',
-            'selectedServiceData.id_categorias' => 'required|exists:categories,id',
         ]);
 
         $service = Service::find($this->selectedServiceData['id']);
@@ -82,13 +81,15 @@ class CategoryServices extends Component
                 'id_categorias' => $this->selectedServiceData['id_categorias'],
             ]);
 
-            $this->dispatch('closeModal', ['modalId' => 'ModalEditService']);
             $this->loadItens();
-            session()->flash('message', 'Serviço atualizado com sucesso!');
+            // session()->flash('message', 'Serviço atualizado com sucesso!');
         }
+
+        $this->dispatch('closeModalServicesEdit');
+
     }
 
-        public function editService($serviceId)
+    public function editService($serviceId)
     {
         $service = Service::find($serviceId);
 
@@ -102,74 +103,119 @@ class CategoryServices extends Component
                 'id_categorias' => $service->id_categorias,
             ];
         }
+        $this->loadItens();
+        $this->dispatch('openModal');
 
-        $this->dispatch('openModal', ['modalId' => 'ModalEditService']);
     }
 
 
     public function addCategory()
     {
-        $this->validate([
-            'newCategory.title' => 'required|string|max:255',
-            'newCategory.status' => 'required|in:active,inactive',
-        ]);
+        try {
+            $this->validate([
+                'newCategory.title' => 'required|string|max:255',
+                'newCategory.status' => 'required|in:active,inactive',
+            ]);
 
-        $user = User::where("id",$this->userSelect)->get();
+            $user = User::where("id", $this->userSelect)->first();
 
-        $maxOrder = Category::where('id_user', $user[0]->id)
-            ->max('order');
+            $maxOrder = Category::where('id_user', $user->id)
+                ->max('order');
 
-        $newOrder = $maxOrder !== null ? $maxOrder + 1 : 1;
+            $newOrder = $maxOrder !== null ? $maxOrder + 1 : 1;
 
-        Category::create([
-            'title' => $this->newCategory['title'],
-            'status' => $this->newCategory['status'],
-            'id_empresa' => $user[0]->id_prestadores,
-            'id_user' => $user[0]->id,
-            'order' => $newOrder,
+            Category::create([
+                'title' => $this->newCategory['title'],
+                'status' => $this->newCategory['status'],
+                'id_empresa' => $user->id_prestadores,
+                'id_user' => $user->id,
+                'order' => $newOrder,
+            ]);
 
-        ]);
+            $this->reset('newCategory');
+            $this->loadItens();
 
-        $this->loadItens();
+            $this->dispatch('reloadPage');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->dispatch('reloadPage');
+        }
+    }
+    public function confirmDeleteService()
+    {
+        $this->dispatch('confirmDeleteService');
+    }
+    public function deleteService()
+    {
+        $service = Service::find($this->selectedServiceData['id']);
 
-        $this->reset('newCategory');
-        $this->dispatch('closeModal', ['modalId' => 'ModalAddCategory']);
+        if ($service) {
+            $service->delete();
+            $this->reset('selectedServiceData');
+            $this->loadItens();
+            session()->flash('message', 'Serviço deletado com sucesso!');
+        }
+
+        $this->dispatch('reloadPage');
+        // $this->dispatchBrowserEvent('closeModal', ['modalId' => 'ModalEditService']);
     }
 
     public function addService()
     {
+        try {
+            $this->validate([
+                'newService.title' => 'required|string|max:255',
+                'newService.price' => 'required|numeric|min:0',
+                'newService.time' => 'required|numeric|min:1',
+                'newService.status' => 'required|in:active,inactive',
+                'newService.order' => 'required|numeric|min:0',
+            ]);
+            $user = User::where("id",$this->userSelect)->get();
 
-        $this->validate([
-            'newService.title' => 'required|string|max:255',
-            'newService.price' => 'required|numeric|min:0',
-            'newService.time' => 'required|numeric|min:1',
-            'newService.status' => 'required|in:active,inactive',
-            'newService.order' => 'required|numeric|min:0',
-        ]);
-        $user = User::where("id",$this->userSelect)->get();
-
-        $maxOrder = Service::where('id_categorias', $this->newService['id_categorias'])
-            ->where('id_user', $user[0]->id)
-            ->max('order');
-        $newOrder = $maxOrder !== null ? $maxOrder + 1 : 1;
-
-
-
-        Service::create([
-            'title' => $this->newService['title'],
-            'price' => $this->newService['price'],
-            'time' => $this->newService['time'],
-            'status' => $this->newService['status'],
-            'order' => $newOrder,
-            'id_categorias' => $this->newService['id_categorias'],
-            'id_empresa' => $user[0]->id_prestadores,
-            'id_user' => $user[0]->id,
-        ]);
+            $maxOrder = Service::where('id_categorias', $this->newService['id_categorias'])
+                ->where('id_user', $user[0]->id)
+                ->max('order');
+            $newOrder = $maxOrder !== null ? $maxOrder + 1 : 1;
 
 
-        $this->reset('newService');
-        $this->dispatchBrowserEvent('closeModal', ['modalId' => 'ModalAddService']);
-        session()->flash('message', 'Serviço adicionado com sucesso!');
+
+            Service::create([
+                'title' => $this->newService['title'],
+                'price' => $this->newService['price'],
+                'time' => $this->newService['time'],
+                'status' => $this->newService['status'],
+                'order' => $newOrder,
+                'id_categorias' => $this->newService['id_categorias'],
+                'id_empresa' => $user[0]->id_prestadores,
+                'id_user' => $user[0]->id,
+            ]);
+
+
+            $this->reset('newService');
+            // $this->dispatchBrowserEvent('closeModal', ['modalId' => 'ModalAddService']);
+            // session()->flash('message', 'Serviço adicionado com sucesso!');
+            $this->loadItens();
+            $this->dispatch('reloadPage');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->dispatch('reloadPage');
+        }
+    }
+
+    public function confirmDeleteCategory()
+    {
+        $this->dispatch('confirmDeleteCategory');
+    }
+    public function deleteCategory()
+    {
+        $category = Category::find($this->selectedCategoryData['id']);
+
+        if ($category) {
+            $category->delete();
+            $this->reset('selectedCategoryData');
+            $this->loadItens();
+            session()->flash('message', 'Categoria deletada com sucesso!');
+        }
+        // $this->dispatch('closeModal', ['modalId' => 'ModalEditServices']);
+        $this->dispatch('reloadPage');
     }
 
 
@@ -220,6 +266,14 @@ class CategoryServices extends Component
         foreach ($order as $index => $serviceId) {
             Service::where('id', $serviceId)->update(['order' => $index + 1]);
         }
+        $this->loadItens();
+    }
+    public function updateCategoryOrder($order)
+    {
+        foreach ($order as $index => $categoryId) {
+            Category::where('id', $categoryId)->update(['order' => $index + 1]);
+        }
+
         $this->loadItens();
     }
 

@@ -61,20 +61,13 @@
         .div-button-edit button{
             margin-right: 10px;
         }
-        .containe-collapse{
-            margin: 10px;
-        }
-        .collapse {
-            background: #f8f9fa;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
     </style>
     <div>
-        @if (session()->has('message'))
+        {{-- @if (session()->has('message'))
             <div class="alert alert-success">
                 {{ session('message') }}
             </div>
-        @endif
+        @endif --}}
 
         <div class="card">
             <div class="contaner-user">
@@ -97,39 +90,42 @@
                 </div>
 
 
-                @foreach ($categorys as $category)
-                <h2
-                    style="text-align: center;margin: 10px;"
-                    wire:click.prevent="editCategory({{ $category->id }})"
+                <div id="sortable-categories">
+                    @foreach ($categorys as $category)
+                        <div class="sortable-category" data-id="{{ $category->id }}">
+                            <h2
+                                style="text-align: center; margin: 10px; cursor: grab;"
+                                wire:click.prevent="editCategory({{ $category->id }})"
+                            >
+                                {{ $category->title }}
+                            </h2>
+                            <ul id="sortable-list-{{ $category->id }}" class="sortable-list">
+                                @foreach ($services as $service)
+                                    @if($service->id_categorias == $category->id)
+                                        <li data-id="{{ $service->id }}">
+                                            <span>
+                                                <div>
+                                                    <h2>{{ $service->title }}</h2>
+                                                </div>
+                                                <div style="font-size: 12px; opacity: 65%;">{{ $service->price }}€ - {{ $service->time }} min</div>
+                                            </span>
+                                            <div>
+                                                <button
+                                                    class="btn btn-sm btn-gradient-primary btn-rounded btn-icon"
+                                                    wire:click="editService({{ $service->id }})"
+                                                >
+                                                    <i class="fa fa-pencil"></i>
+                                                </button>
+                                            </div>
+                                        </li>
+                                    @endif
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endforeach
+                </div>
 
-                >{{ $category->title }}</h2>
-
-                    <ul id="sortable-list-{{ $category->id }}" class="sortable-list">
-                        @foreach ($services as $service)
-                            @if($service->id_categorias == $category->id)
-                                <li data-id="{{ $service->id }}">
-                                    <span>
-                                        <div>
-                                            <h2>{{ $service->title }}</h2>
-                                        </div>
-                                        <div style="font-size: 12px;opacity: 65%;">{{ $service->price}}€ - {{ $service->time }} min</div>
-                                    </span>
-                                    <div>
-                                        <button
-                                            class="btn btn-sm btn-gradient-primary btn-rounded btn-icon"
-                                            wire:click="editService({{ $service->id }})"
-                                            >
-                                            <i class="fa fa-pencil"></i>
-                                        </button>
-
-                                    </div>
-                                </li>
-                            @endif
-                        @endforeach
-                    </ul>
-                @endforeach
             </div>
-
         </div>
         <div class="modal fade" id="ModalEditServices" tabindex="-1" aria-labelledby="ModalEditServicesLabel" >
             <div class="modal-dialog">
@@ -161,8 +157,12 @@
                                     <option value="inactive">Inativo</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                        </form>
+                            <div class="modal-footer">
+                                {{-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button> --}}
+                                <button type="button" wire:click="confirmDeleteCategory" class="btn btn-danger">Deletar Categoria</button>
+                                <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                            </div>
+                                                    </form>
                     </div>
                 </div>
             </div>
@@ -198,6 +198,16 @@
                 </div>
             </div>
         </div>
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <!-- Modal para adicionar categoria -->
         <div class="modal fade" id="ModalAddCategory" tabindex="-1" aria-labelledby="ModalAddCategoryLabel">
             <div class="modal-dialog">
@@ -230,6 +240,7 @@
                             </div>
                             <button type="submit" class="btn btn-success">Salvar Categoria</button>
                         </form>
+
                     </div>
                 </div>
             </div>
@@ -387,8 +398,12 @@
                                 </select>
                             </div>
 
-                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                        </form>
+                            <div class="modal-footer">
+                                {{-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button> --}}
+                                <button type="button" wire:click="confirmDeleteService" class="btn btn-danger">Deletar Serviço</button>
+                                <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                            </div>
+                                                    </form>
                     </div>
                 </div>
             </div>
@@ -404,12 +419,71 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            window.addEventListener('openModal', function (event) {
-                const modalElement = document.getElementById(event.detail.modalId);
+            window.addEventListener('confirmDeleteService', function () {
+                Swal.fire({
+                    title: 'Tem certeza?',
+                    text: "Você não poderá reverter isso!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sim, deletar!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        @this.call('deleteService');
+                    }
+                });
+            });
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+            window.addEventListener('confirmDeleteCategory', function () {
+                Swal.fire({
+                    title: 'Tem certeza?',
+                    text: "Você não poderá reverter isso!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sim, deletar!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        @this.call('deleteCategory');
+                    }
+                });
+            });
+        });
+        document.addEventListener('reloadPage', function () {
+            location.reload();
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            window.addEventListener('openModal', function () {
+                const modalElement = document.getElementById('ModalEditService');
                 const modal = new bootstrap.Modal(modalElement);
                 modal.show();
             });
         });
+        document.addEventListener('DOMContentLoaded', function () {
+            window.addEventListener('closeModalServicesEdit', function () {
+                const modalElement = document.getElementById('ModalEditService');
+                const modal = new bootstrap.Modal(modalElement);
+                console.log("closeModalServicesEdit");
+
+                modal.hide();
+
+                modalElement.style.display = 'none';
+
+                modalElement.classList.remove('show');
+
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+
+                document.body.classList.remove('modal-open');
+            });
+        });
+
 
         document.addEventListener('DOMContentLoaded', function () {
             window.addEventListener('openModalEditServices', function () {
@@ -422,15 +496,33 @@
             window.addEventListener('closeModalEditServices', function () {
                 const modalElement = document.getElementById('ModalEditServices');
                 const modal = bootstrap.Modal.getInstance(modalElement);
-                modal.hide();
+                if (modal) {
+                    modal.hide();
+                }
             });
         });
         document.addEventListener('DOMContentLoaded', function () {
             window.addEventListener('closeModal', function (event) {
                 const modalElement = document.getElementById(event.detail.modalId);
                 const modal = bootstrap.Modal.getInstance(modalElement);
-                modal.hide();
+                if (modal) {
+                    modal.hide();
+                }
             });
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+            const sortableCategories = document.getElementById('sortable-categories');
+
+            if (sortableCategories) {
+                new Sortable(sortableCategories, {
+                    animation: 150,
+                    handle: '.sortable-category h2', // Permite arrastar clicando no título da categoria
+                    onEnd: function (evt) {
+                        const order = Array.from(sortableCategories.children).map(item => item.dataset.id);
+                        @this.call('updateCategoryOrder', order); // Envia a nova ordem para o Livewire
+                    }
+                });
+            }
         });
 
         document.addEventListener('DOMContentLoaded', function () {
