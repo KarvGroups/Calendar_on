@@ -61,14 +61,27 @@
         .div-button-edit button{
             margin-right: 10px;
         }
+        .containe-collapse{
+            margin: 10px;
+        }
+        .collapse {
+            background: #f8f9fa;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
     </style>
     <div>
+        @if (session()->has('message'))
+            <div class="alert alert-success">
+                {{ session('message') }}
+            </div>
+        @endif
+
         <div class="card">
             <div class="contaner-user">
                 @foreach ($usuarios as $usuario)
                     <div class="item-contaner" wire:click='selectThisUser({{$usuario->id}})'>
                         <div class="div-user @if($userSelect == $usuario->id) div-user-active @endif">
-                            <img src="https://viciados.net/wp-content/uploads/2022/11/Naruto-Shippuden-Boruto-2023.webp" alt="usuario">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-Xx8AIsxmieshLptYYnziOIzxBgt39H5nyX9cWLTP_kK5f2QaXYu7SdQd7yNCohSuF6I&usqp=CAU" alt="usuario">
                             <div>
                                 <h3>{{$usuario->apelido}}</h3>
                                 <p>{{$usuario->status}}</p>
@@ -80,11 +93,17 @@
 
             <div class="card-body" style="padding: 15px 0;">
                 <div class="div-button-edit">
-                    <button class="btn btn-sm btn-gradient-primary" data-bs-toggle="modal" data-bs-target="#ModalAddServices" style="height: 32px!important;">Adicionar </button>
-                    <button class="btn btn-sm btn-gradient-primary" data-bs-toggle="modal" data-bs-target="#ModalEditServices" style="height: 32px!important;">Editar </button>
+                    <button class="btn btn-sm btn-gradient-primary" data-bs-toggle="modal" data-bs-target="#ModalAddOptions" style="height: 32px!important;">Adicionar</button>
                 </div>
+
+
                 @foreach ($categorys as $category)
-                    <h2 style="text-align: center;margin: 10px;">{{ $category->title }}</h2>
+                <h2
+                    style="text-align: center;margin: 10px;"
+                    wire:click.prevent="editCategory({{ $category->id }})"
+
+                >{{ $category->title }}</h2>
+
                     <ul id="sortable-list-{{ $category->id }}" class="sortable-list">
                         @foreach ($services as $service)
                             @if($service->id_categorias == $category->id)
@@ -96,7 +115,13 @@
                                         <div style="font-size: 12px;opacity: 65%;">{{ $service->price}}€ - {{ $service->time }} min</div>
                                     </span>
                                     <div>
-                                        <button class="btn btn-sm btn-gradient-primary btn-rounded btn-icon" style="width: 32px!important;height: 32px!important;"><i class="fa fa-pencil"></i></button>
+                                        <button
+                                            class="btn btn-sm btn-gradient-primary btn-rounded btn-icon"
+                                            wire:click="editService({{ $service->id }})"
+                                            >
+                                            <i class="fa fa-pencil"></i>
+                                        </button>
+
                                     </div>
                                 </li>
                             @endif
@@ -106,49 +131,308 @@
             </div>
 
         </div>
-        <div class="modal fade" id="ModalEditServices" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="ModalEditServices" tabindex="-1" aria-labelledby="ModalEditServicesLabel" >
             <div class="modal-dialog">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="exampleModalLabel">Editar</h1>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="ModalEditServicesLabel">Editar Categoria</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Conteúdo do formulário -->
+                        <form wire:submit.prevent="updateCategory">
+                            <div class="form-group">
+                                <label for="categoryTitle">Título</label>
+                                <input
+                                    type="text"
+                                    id="categoryTitle"
+                                    wire:model="selectedCategoryData.title"
+                                    class="form-control"
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="categoryStatus">Status</label>
+                                <select
+                                    id="categoryStatus"
+                                    wire:model="selectedCategoryData.status"
+                                    class="form-control"
+                                >
+                                    <option value="active">Ativo</option>
+                                    <option value="inactive">Inativo</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        </form>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <form class="forms-sample">
-                        <div class="form-group">
-                            <label class="col-form-label">Categorias</label>
-                            <select class="js-example-basic-single" style="width:100%">
-                                @foreach ($categorys as $category)
-                                    <option value="{{$category->id}}">{{$category->title}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        {{-- <div class="form-group">
-                            <label for="exampleInputEmail1">Email address</label>
-                            <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Email">
-                        </div>
-                        <div class="form-group">
-                            <label for="exampleInputPassword1">Password</label>
-                            <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
-                        </div>
-                        <div class="form-group">
-                            <label for="exampleInputConfirmPassword1">Confirm Password</label>
-                            <input type="password" class="form-control" id="exampleInputConfirmPassword1" placeholder="Password">
-                        </div> --}}
-                    </form>
-                </div>
-                {{-- <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                  <button type="button" class="btn btn-gradient-primary">Enviar</button>
-                </div> --}}
-              </div>
             </div>
-          </div>
+        </div>
+        <div class="modal fade" id="ModalAddOptions" tabindex="-1" aria-labelledby="ModalAddOptionsLabel">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="ModalAddOptionsLabel">Adicionar</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>O que você deseja adicionar?</p>
+                        <div class="d-flex justify-content-around">
+                            <button
+                                class="btn btn-primary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#ModalAddCategory"
+                                data-bs-dismiss="modal"
+                            >
+                                Adicionar Categoria
+                            </button>
+                            <button
+                                class="btn btn-secondary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#ModalAddService"
+                                data-bs-dismiss="modal"
+                            >
+                                Adicionar Serviço
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal para adicionar categoria -->
+        <div class="modal fade" id="ModalAddCategory" tabindex="-1" aria-labelledby="ModalAddCategoryLabel">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="ModalAddCategoryLabel">Adicionar Categoria</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form wire:submit.prevent="addCategory">
+                            <div class="form-group">
+                                <label for="categoryTitle">Título</label>
+                                <input
+                                    type="text"
+                                    id="categoryTitle"
+                                    wire:model="newCategory.title"
+                                    class="form-control"
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="categoryStatus">Status</label>
+                                <select
+                                    id="categoryStatus"
+                                    wire:model="newCategory.status"
+                                    class="form-control"
+                                >
+                                    <option value="active">Ativo</option>
+                                    <option value="inactive">Inativo</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success">Salvar Categoria</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal para adicionar serviço -->
+        <div class="modal fade" id="ModalAddService" tabindex="-1" aria-labelledby="ModalAddServiceLabel" >
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="ModalAddServiceLabel">Adicionar Serviço</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form wire:submit.prevent="addService">
+                            <!-- Campo: Título -->
+                            <div class="form-group">
+                                <label for="serviceTitle">Título</label>
+                                <input
+                                    type="text"
+                                    id="serviceTitle"
+                                    wire:model="newService.title"
+                                    class="form-control"
+                                    placeholder="Digite o título do serviço"
+                                />
+                            </div>
+
+                            <!-- Campo: Preço -->
+                            <div class="form-group">
+                                <label for="servicePrice">Preço (€)</label>
+                                <input
+                                    type="number"
+                                    id="servicePrice"
+                                    wire:model="newService.price"
+                                    class="form-control"
+                                    placeholder="Digite o preço"
+                                />
+                            </div>
+
+                            <!-- Campo: Tempo -->
+                            <div class="form-group">
+                                <label for="serviceTime">Tempo (min)</label>
+                                <input
+                                    type="number"
+                                    id="serviceTime"
+                                    wire:model="newService.time"
+                                    class="form-control"
+                                    placeholder="Tempo em minutos"
+                                />
+                            </div>
+
+                            <!-- Campo: Status -->
+                            <div class="form-group">
+                                <label for="serviceStatus">Status</label>
+                                <select
+                                    id="serviceStatus"
+                                    wire:model="newService.status"
+                                    class="form-control"
+                                >
+                                    <option value="active">Ativo</option>
+                                    <option value="inactive">Inativo</option>
+                                </select>
+                            </div>
+
+                            <!-- Campo: Categoria -->
+                            <div class="form-group">
+                                <label for="serviceCategory">Categoria</label>
+                                <select
+                                    id="serviceCategory"
+                                    wire:model="newService.id_categorias"
+                                    class="form-control"
+                                >
+                                    <option value="" selected>Selecione uma categoria</option>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category->id }}">{{ $category->title }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-success">Salvar Serviço</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="ModalEditService" tabindex="-1" aria-labelledby="ModalEditServiceLabel">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="ModalEditServiceLabel">Editar Serviço</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form wire:submit.prevent="updateService">
+                            <!-- Campo: Título -->
+                            <div class="form-group">
+                                <label for="editServiceTitle">Título</label>
+                                <input
+                                    type="text"
+                                    id="editServiceTitle"
+                                    wire:model="selectedServiceData.title"
+                                    class="form-control"
+                                    placeholder="Digite o título do serviço"
+                                />
+                            </div>
+
+                            <!-- Campo: Preço -->
+                            <div class="form-group">
+                                <label for="editServicePrice">Preço (€)</label>
+                                <input
+                                    type="number"
+                                    id="editServicePrice"
+                                    wire:model="selectedServiceData.price"
+                                    class="form-control"
+                                    placeholder="Digite o preço"
+                                />
+                            </div>
+
+                            <!-- Campo: Tempo -->
+                            <div class="form-group">
+                                <label for="editServiceTime">Tempo (min)</label>
+                                <input
+                                    type="number"
+                                    id="editServiceTime"
+                                    wire:model="selectedServiceData.time"
+                                    class="form-control"
+                                    placeholder="Tempo em minutos"
+                                />
+                            </div>
+
+                            <!-- Campo: Status -->
+                            <div class="form-group">
+                                <label for="editServiceStatus">Status</label>
+                                <select
+                                    id="editServiceStatus"
+                                    wire:model="selectedServiceData.status"
+                                    class="form-control"
+                                >
+                                    <option value="active">Ativo</option>
+                                    <option value="inactive">Inativo</option>
+                                </select>
+                            </div>
+
+                            <!-- Campo: Categoria -->
+                            <div class="form-group">
+                                <label for="editServiceCategory">Categoria</label>
+                                <select
+                                    id="editServiceCategory"
+                                    wire:model="selectedServiceData.id_categorias"
+                                    class="form-control"
+                                >
+                                    <option value="" selected>Selecione uma categoria</option>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category->id }}">{{ $category->title }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div wire:loading>
+            <span>Carregando...</span>
+        </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            window.addEventListener('openModal', function (event) {
+                const modalElement = document.getElementById(event.detail.modalId);
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            window.addEventListener('openModalEditServices', function () {
+                const modalElement = document.getElementById('ModalEditServices');
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            });
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+            window.addEventListener('closeModalEditServices', function () {
+                const modalElement = document.getElementById('ModalEditServices');
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                modal.hide();
+            });
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+            window.addEventListener('closeModal', function (event) {
+                const modalElement = document.getElementById(event.detail.modalId);
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                modal.hide();
+            });
+        });
+
         document.addEventListener('DOMContentLoaded', function () {
             function initializeSortable() {
                 const categories = @json($categorys->map(function($category) {
