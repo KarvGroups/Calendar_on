@@ -2,6 +2,7 @@
 
 namespace App\Livewire\empresas\services;
 
+use App\Models\NonWorkingHours;
 use App\Models\WorkSchedule;
 use Livewire\Component;
 use Carbon\Carbon;
@@ -9,29 +10,87 @@ use Illuminate\Support\Facades\Auth;
 
 class Horarios extends Component
 {
+    public $currentMonth;
+    public $currentYear;
+    public $daysInMonth;
+    public $startDayOfMonth;
+    public $selectedDay = null;
+    public $daySchedules = [];
+    public $nonWorkingHours = [];
+
     public $workSchedules = [];
     public $newSchedule = [
         'day_of_week' => '',
         'start_time' => '',
         'end_time' => '',
     ];
+    public $schedulesByDayOfWeek = [];
 
     public function mount()
     {
-        // Carrega os horários do usuário autenticado
+        $this->currentMonth = now()->month;
+        $this->currentYear = now()->year;
+        $this->loadMonthData();
+
         $this->workSchedules = WorkSchedule::where('user_id', Auth::id())->get()->toArray();
+
+        $this->schedulesByDayOfWeek = WorkSchedule::where('user_id', Auth::id())
+            ->get()
+            ->groupBy('day_of_week')
+            ->toArray();
     }
 
+    public function markAsNonWorkingHour($time)
+    {
+        if (!$this->selectedDay) {
+            return;
+        }
+
+        NonWorkingHours::create([
+            'user_id' => Auth::id(),
+            'date' => $this->selectedDay,
+            'time' => $time,
+        ]);
+
+        $this->daySchedules = array_filter($this->daySchedules, function ($availableTime) use ($time) {
+            return $availableTime !== $time;
+        });
+    }
+
+
+    public function loadMonthData()
+    {
+        $this->daysInMonth = Carbon::create($this->currentYear, $this->currentMonth, 1)->daysInMonth;
+        $this->startDayOfMonth = Carbon::create($this->currentYear, $this->currentMonth, 1)->dayOfWeek;
+    }
+
+    public function previousMonth()
+    {
+        $this->currentMonth--;
+        if ($this->currentMonth < 1) {
+            $this->currentMonth = 12;
+            $this->currentYear--;
+        }
+        $this->loadMonthData();
+    }
+
+    public function nextMonth()
+    {
+        $this->currentMonth++;
+        if ($this->currentMonth > 12) {
+            $this->currentMonth = 1;
+            $this->currentYear++;
+        }
+        $this->loadMonthData();
+    }
     public function addSchedule()
     {
-        // Validação simples
         $this->validate([
             'newSchedule.day_of_week' => 'required|string',
             'newSchedule.start_time' => 'required|date_format:H:i',
             'newSchedule.end_time' => 'required|date_format:H:i|after:newSchedule.start_time',
         ]);
 
-        // Cria o horário e salva no banco
         $schedule = WorkSchedule::create([
             'user_id' => Auth::id(),
             'day_of_week' => $this->newSchedule['day_of_week'],
@@ -39,10 +98,8 @@ class Horarios extends Component
             'end_time' => $this->newSchedule['end_time'],
         ]);
 
-        // Atualiza a lista de horários
         $this->workSchedules[] = $schedule->toArray();
 
-        // Limpa o formulário
         $this->newSchedule = [
             'day_of_week' => '',
             'start_time' => '',
@@ -56,12 +113,65 @@ class Horarios extends Component
 
         if ($schedule && $schedule->user_id == Auth::id()) {
             $schedule->delete();
-            // Atualiza a lista de horários
+
             $this->workSchedules = array_filter($this->workSchedules, function ($schedule) use ($id) {
                 return $schedule['id'] != $id;
             });
         }
     }
+
+    public function selectDay($day)
+    {
+        $selectedDate = Carbon::create($this->currentYear, $this->currentMonth, $day)->format('Y-m-d');
+
+        if ($this->selectedDay === $selectedDate) {
+            $this->selectedDay = null;
+            $this->daySchedules = [];
+            $this->nonWorkingHours = [];
+        } else {
+            $this->selectedDay = $selectedDate;
+
+            $dayOfWeek = Carbon::create($this->currentYear, $this->currentMonth, $day)->locale('pt_BR')->dayName;
+
+            $schedules = WorkSchedule::where('user_id', Auth::id())
+                ->where('day_of_week', ucfirst($dayOfWeek))
+                ->get();
+
+            $this->daySchedules = [];
+            foreach ($schedules as $schedule) {
+                $intervals = $this->generateIntervals($schedule->start_time, $schedule->end_time);
+                $this->daySchedules = array_merge($this->daySchedules, $intervals);
+            }
+
+            $this->nonWorkingHours = NonWorkingHours::where('user_id', Auth::id())
+                ->where('date', $this->selectedDay)
+                ->pluck('time')
+                ->toArray();
+        }
+    }
+
+    private function generateIntervals($startTime, $endTime)
+    {
+        try {
+            $start = Carbon::createFromFormat('H:i:s', $startTime);
+            $end = Carbon::createFromFormat('H:i:s', $endTime);
+        } catch (\Exception $e) {
+            throw new \Exception("Erro ao processar horários: {$startTime} ou {$endTime}. Detalhes: " . $e->getMessage());
+        }
+
+        $intervals = [];
+        while ($start->lessThan($end)) {
+            $intervals[] = $start->format('H:i');
+            $start->addMinutes(10);
+        }
+
+        return $intervals;
+    }
+
+
+
+
+
 
     public function render()
     {

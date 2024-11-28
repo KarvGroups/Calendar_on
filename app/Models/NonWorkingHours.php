@@ -4,18 +4,23 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class WorkSchedule extends Model
+class NonWorkingHours extends Model
 {
     use HasFactory;
 
+    // Nome correto da tabela
+    protected $table = 'non_working_hours';
+
+    // Colunas que podem ser preenchidas em massa
     protected $fillable = [
         'user_id',
-        'day_of_week',
-        'start_time',
-        'end_time',
-        'schedule_block',
+        'date',
+        'time',
     ];
 
+    /**
+     * Relacionamento: Horários não trabalhados pertencem a um usuário
+     */
     public function user()
     {
         return $this->belongsTo(User::class);
