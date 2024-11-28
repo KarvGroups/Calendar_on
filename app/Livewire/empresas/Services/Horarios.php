@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Livewire\empresas\services;
 
 use App\Models\WorkSchedule;
@@ -8,129 +9,59 @@ use Illuminate\Support\Facades\Auth;
 
 class Horarios extends Component
 {
-    public $currentMonth;
-    public $currentYear;
-    public $daysInMonth;
-    public $startDayOfMonth;
-    public $schedules = [];
-    public $selectedDay;
-    public $isWorking = true;
-    public $start_time;
-    public $end_time;
-    public $selectedDays = [];
-
-    public $workBlocks = [
-        ['start_time' => '', 'end_time' => ''],
+    public $workSchedules = [];
+    public $newSchedule = [
+        'day_of_week' => '',
+        'start_time' => '',
+        'end_time' => '',
     ];
 
     public function mount()
     {
-        $this->currentMonth = now()->month;
-        $this->currentYear = now()->year;
-        $this->loadMonthData();
-        $this->loadSchedules();
-    }
-    public function loadMonthData()
-    {
-        $this->daysInMonth = Carbon::create($this->currentYear, $this->currentMonth, 1)->daysInMonth;
-        $this->startDayOfMonth = Carbon::create($this->currentYear, $this->currentMonth, 1)->dayOfWeek;
-    }
-    public function addWorkBlock()
-    {
-        $this->workBlocks[] = ['start_time' => '', 'end_time' => ''];
-    }
-    public function loadSchedules()
-    {
-        $this->schedules = WorkSchedule::where('user_id', Auth::id())
-            ->whereMonth('day_of_week', $this->currentMonth)
-            ->whereYear('day_of_week', $this->currentYear)
-            ->get()
-            ->groupBy('day_of_week')
-            ->toArray();
-    }
-    public function deleteSelectedDays()
-    {
-        foreach ($this->selectedDays as $selectedDay) {
-            WorkSchedule::where('user_id', Auth::id())
-                ->where('day_of_week', $selectedDay)
-                ->delete();
-        }
-        $this->selectedDays = [];
-
-        $this->loadSchedules();
-        session()->flash('message', 'Horários deletados com sucesso para os dias selecionados!');
+        // Carrega os horários do usuário autenticado
+        $this->workSchedules = WorkSchedule::where('user_id', Auth::id())->get()->toArray();
     }
 
-
-
-    public function previousMonth()
+    public function addSchedule()
     {
-        $this->currentMonth--;
-        if ($this->currentMonth < 1) {
-            $this->currentMonth = 12;
-            $this->currentYear--;
-        }
-        $this->loadMonthData();
-        $this->loadSchedules();
+        // Validação simples
+        $this->validate([
+            'newSchedule.day_of_week' => 'required|string',
+            'newSchedule.start_time' => 'required|date_format:H:i',
+            'newSchedule.end_time' => 'required|date_format:H:i|after:newSchedule.start_time',
+        ]);
+
+        // Cria o horário e salva no banco
+        $schedule = WorkSchedule::create([
+            'user_id' => Auth::id(),
+            'day_of_week' => $this->newSchedule['day_of_week'],
+            'start_time' => $this->newSchedule['start_time'],
+            'end_time' => $this->newSchedule['end_time'],
+        ]);
+
+        // Atualiza a lista de horários
+        $this->workSchedules[] = $schedule->toArray();
+
+        // Limpa o formulário
+        $this->newSchedule = [
+            'day_of_week' => '',
+            'start_time' => '',
+            'end_time' => '',
+        ];
     }
 
-    public function nextMonth()
+    public function deleteSchedule($id)
     {
-        $this->currentMonth++;
-        if ($this->currentMonth > 12) {
-            $this->currentMonth = 1;
-            $this->currentYear++;
-        }
-        $this->loadMonthData();
-        $this->loadSchedules();
-    }
+        $schedule = WorkSchedule::find($id);
 
-    public function selectDay($day)
-    {
-        $selectedDate = Carbon::create($this->currentYear, $this->currentMonth, $day)->format('Y-m-d');
-
-        if (in_array($selectedDate, $this->selectedDays)) {
-
-            $this->selectedDays = array_diff($this->selectedDays, [$selectedDate]);
-        } else {
-            $this->selectedDays[] = $selectedDate;
+        if ($schedule && $schedule->user_id == Auth::id()) {
+            $schedule->delete();
+            // Atualiza a lista de horários
+            $this->workSchedules = array_filter($this->workSchedules, function ($schedule) use ($id) {
+                return $schedule['id'] != $id;
+            });
         }
     }
-
-
-    public function saveScheduleForDay()
-{
-    foreach ($this->selectedDays as $selectedDay) {
-        foreach ($this->workBlocks as $index => $block) {
-            $existingSchedule = WorkSchedule::where('user_id', Auth::id())
-                ->where('day_of_week', $selectedDay)
-                ->where('schedule_block', $index + 1)
-                ->first();
-
-            if ($existingSchedule) {
-                $existingSchedule->update([
-                    'start_time' => $block['start_time'],
-                    'end_time' => $block['end_time'],
-                    'is_working' => $this->isWorking,
-                ]);
-            } else {
-                WorkSchedule::create([
-                    'user_id' => Auth::id(),
-                    'day_of_week' => $selectedDay,
-                    'start_time' => $block['start_time'],
-                    'end_time' => $block['end_time'],
-                    'is_working' => $this->isWorking,
-                    'schedule_block' => $index + 1,
-                ]);
-            }
-        }
-    }
-
-    $this->loadSchedules();
-
-    session()->flash('message', 'Horários atualizados com sucesso para os dias selecionados!');
-}
-
 
     public function render()
     {
