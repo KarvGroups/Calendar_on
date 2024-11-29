@@ -25,6 +25,8 @@ class Horarios extends Component
         'end_time' => '',
     ];
     public $schedulesByDayOfWeek = [];
+    public $fullyNonWorkingDays = [];
+    
 
     public function mount()
     {
@@ -38,6 +40,35 @@ class Horarios extends Component
             ->get()
             ->groupBy('day_of_week')
             ->toArray();
+
+        $this->loadFullyNonWorkingDays();
+    }
+    public function loadFullyNonWorkingDays()
+    {
+        $this->fullyNonWorkingDays = NonWorkingHours::where('user_id', Auth::id())
+            ->whereMonth('date', $this->currentMonth)
+            ->whereYear('date', $this->currentYear)
+            ->get()
+            ->groupBy('date')
+            ->filter(function ($hours, $date) {
+                $dayOfWeek = Carbon::createFromFormat('Y-m-d', $date)->locale('pt_BR')->dayName;
+
+                $workSchedules = WorkSchedule::where('user_id', Auth::id())
+                    ->where('day_of_week', ucfirst($dayOfWeek))
+                    ->get();
+
+                $daySchedules = [];
+                foreach ($workSchedules as $schedule) {
+                    $daySchedules = array_merge(
+                        $daySchedules,
+                        $this->generateIntervals($schedule->start_time, $schedule->end_time)
+                    );
+                }
+
+                return count($daySchedules) > 0 && count($daySchedules) === $hours->count();
+            })
+            ->keys()
+            ->toArray();
     }
 
     public function markAsNonWorkingHour($time)
@@ -46,17 +77,62 @@ class Horarios extends Component
             return;
         }
 
-        NonWorkingHours::create([
-            'user_id' => Auth::id(),
-            'date' => $this->selectedDay,
-            'time' => $time,
-        ]);
+        if (in_array($time, $this->nonWorkingHours)) {
+            NonWorkingHours::where('user_id', Auth::id())
+                ->where('date', $this->selectedDay)
+                ->where('time', Carbon::createFromFormat('H:i', $time)->format('H:i:s'))
+                ->delete();
 
-        $this->daySchedules = array_filter($this->daySchedules, function ($availableTime) use ($time) {
-            return $availableTime !== $time;
-        });
+            $this->nonWorkingHours = array_filter($this->nonWorkingHours, function ($t) use ($time) {
+                return $t !== $time;
+            });
+        } else {
+            NonWorkingHours::create([
+                'user_id' => Auth::id(),
+                'date' => $this->selectedDay,
+                'time' => Carbon::createFromFormat('H:i', $time)->format('H:i:s'),
+            ]);
+
+            $this->nonWorkingHours[] = $time;
+        }
+        $this->loadFullyNonWorkingDays();
+
+    }
+    public function markFullDay()
+    {
+        if (!$this->selectedDay || empty($this->daySchedules)) {
+            return;
+        }
+
+        foreach ($this->daySchedules as $time) {
+            if (!in_array($time, $this->nonWorkingHours)) {
+                NonWorkingHours::create([
+                    'user_id' => Auth::id(),
+                    'date' => $this->selectedDay,
+                    'time' => Carbon::createFromFormat('H:i', $time)->format('H:i:s'),
+                ]);
+
+                $this->nonWorkingHours[] = $time;
+            }
+        }
+
+        $this->loadFullyNonWorkingDays();
     }
 
+    public function unmarkFullDay()
+    {
+        if (!$this->selectedDay || empty($this->nonWorkingHours)) {
+            return;
+        }
+
+        NonWorkingHours::where('user_id', Auth::id())
+            ->where('date', $this->selectedDay)
+            ->delete();
+
+        $this->nonWorkingHours = [];
+
+        $this->loadFullyNonWorkingDays();
+    }
 
     public function loadMonthData()
     {
@@ -144,9 +220,14 @@ class Horarios extends Component
             }
 
             $this->nonWorkingHours = NonWorkingHours::where('user_id', Auth::id())
-                ->where('date', $this->selectedDay)
-                ->pluck('time')
-                ->toArray();
+            ->where('date', $this->selectedDay)
+            ->get()
+            ->pluck('time')
+            ->map(function ($time) {
+                return \Carbon\Carbon::createFromFormat('H:i:s', $time)->format('H:i');
+            })
+            ->toArray();
+
         }
     }
 
@@ -161,12 +242,13 @@ class Horarios extends Component
 
         $intervals = [];
         while ($start->lessThan($end)) {
-            $intervals[] = $start->format('H:i');
+            $intervals[] = $start->format('H:i'); // Certifique-se de retornar no formato correto
             $start->addMinutes(10);
         }
 
         return $intervals;
     }
+
 
 
 

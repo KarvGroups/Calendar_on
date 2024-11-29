@@ -59,7 +59,7 @@
 
         .selected-day {
             background-color: #b66dff;
-            color: white;
+            color: white !important;
         }
         .delete-button {
             background-color: red;
@@ -135,9 +135,12 @@
             border: 1px solid #ccc;
         }
         .non-working-hour {
-            background-color: #f8d7da; /* Vermelho claro */
-            color: #721c24; /* Texto vermelho */
-            border: 1px solid #f5c6cb;
+            color: gray !important;
+            opacity: 40%;
+        }
+        .fully-non-working-day {
+            color: gray ;
+            opacity: 40%;
         }
         </style>
     <h2 class="mb-4">Gerenciar Horários</h2>
@@ -175,18 +178,22 @@
 
                     @for ($day = 1; $day <= $daysInMonth; $day++)
                     @php
-                        $date = Carbon\Carbon::create($currentYear, $currentMonth, $day);
-                        $dayOfWeek = ucfirst($date->locale('pt_BR')->dayName); // Garante formato igual ao banco
+                        $date = Carbon\Carbon::create($currentYear, $currentMonth, $day)->format('Y-m-d');
+                        $dayOfWeek = ucfirst(Carbon\Carbon::create($currentYear, $currentMonth, $day)->locale('pt_BR')->dayName);
                         $hasSchedule = isset($schedulesByDayOfWeek[$dayOfWeek]);
+                        $isFullyNonWorking = in_array($date, $fullyNonWorkingDays);
                     @endphp
                     <div class="day
-                        @if($date->format('Y-m-d') === $selectedDay) selected-day @endif
-                        @if(!$hasSchedule) no-work-day @endif"
+                        @if($date === $selectedDay) selected-day @endif
+                        @if(!$hasSchedule) no-work-day @endif
+                        @if($isFullyNonWorking) fully-non-working-day @endif"
                         wire:click="selectDay({{ $day }})">
                         <span>{{ $day }}</span>
                     </div>
+
                     @endfor
                 </div>
+
             </div>
             <div class="mt-4">
                 <h4>Horários do Dia Selecionado</h4>
@@ -195,19 +202,30 @@
                     @if(count($daySchedules) > 0)
                     <div class="time-in-day">
                         @foreach($daySchedules as $time)
-                            <div class="time
-                                @if(in_array($time, $nonWorkingHours)) non-working-hour @endif"
-                                wire:click="markAsNonWorkingHour('{{ $time }}')">
-                                <span>{{ $time }}</span>
-                            </div>
-                        @endforeach
+
+                        <div class="time
+                            @if(in_array($time, $nonWorkingHours)) non-working-hour @endif"
+                            wire:click="markAsNonWorkingHour('{{ $time }}')">
+                            <span>{{ $time }}</span>
+                        </div>
+
+                    @endforeach
+
                     </div>
                     @else
                         <p>Não há horários configurados para este dia.</p>
                     @endif
+                    @if($selectedDay)
+                        <button class="btn btn-danger mb-3" wire:click="markFullDay">Marcar Dia Todo como Não Trabalhável</button>
+                    @endif
+                    @if($selectedDay)
+                        <button class="btn btn-success mb-3" wire:click="unmarkFullDay">Tornar Dia Todo Trabalhável</button>
+                    @endif
+
                 @else
                     <p>Nenhum dia selecionado.</p>
                 @endif
+
             </div>
 
 
@@ -272,4 +290,10 @@
             </div>
         </div>
     </div>
+    <script>
+        Livewire.on('calendarUpdated', () => {
+            console.log('O calendário foi atualizado!');
+            // Adicione lógica adicional, se necessário
+        });
+    </script>
 </div>
