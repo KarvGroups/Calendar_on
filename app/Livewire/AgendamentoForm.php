@@ -13,15 +13,20 @@ class AgendamentoForm extends Component
     public $company;
     public $selectedUser = null;
 
-    public function mount($users)
+    public function mount($users, $company)
     {
-        $this->users = User::where("id_prestadores",$users->id_prestadores)->get();
-        $this->company = Prestadores::where("id",$users->id_prestadores)->get();
-
+        if($company == null){
+            $this->users = User::where("id_prestadores",$users->id_prestadores)->get();
+            $this->company = Prestadores::where("id",$users->id_prestadores)->get();
+        }else{
+            $this->users = $users;
+            $this->company = $company;
+        }
     }
 
     public function selectUser($userId)
     {
+        dd("SSs");
         $this->selectedUser = $userId;
     }
 

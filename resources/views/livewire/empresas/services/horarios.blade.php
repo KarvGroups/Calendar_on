@@ -58,7 +58,7 @@
         }
 
         .selected-day {
-            background-color: #b66dff;
+            background-color: #b66dffcf !important;
             color: white !important;
         }
         .delete-button {
@@ -139,24 +139,36 @@
             opacity: 40%;
         }
         .fully-non-working-day {
-            color: gray ;
-            opacity: 40%;
+            color: #b66dff !important;
+            background-color: #f5f5f5 !important;
+            border: 1px solid #ccc !important;
+            opacity: 100%;
+        }
+        .work-day {
+            background-color: #b66dff38;
+            color: #8702f5;
+            border: 1px solid #b66dff;
+        }
+        .buttons-selct-all{
+            display: flex;
+            justify-content: flex-end;
+            margin: 0 0 20px;
         }
         </style>
     <h2 class="mb-4">Gerenciar Horários</h2>
 
     <ul class="nav nav-tabs">
         <li class="nav-item">
-            <a class="nav-link active" id="calendar-tab" data-bs-toggle="tab" href="#calendarPage" aria-controls="calendarPage" aria-selected="true">Calendário</a>
+            <a class="nav-link {{ $calendarPage }}" wire:click="switchTab('calendar')" id="calendar-tab" data-bs-toggle="tab" href="#calendarPage" aria-controls="calendarPage" aria-selected="true">Calendário</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="hora-tab" data-bs-toggle="tab" href="#horaActivePage" aria-controls="horaActivePage" aria-selected="false">Horário Ativo</a>
+            <a class="nav-link {{ $horaActivePage }}" wire:click="switchTab('hora')" id="hora-tab" data-bs-toggle="tab" href="#horaActivePage" aria-controls="horaActivePage" aria-selected="false">Horário Ativo</a>
         </li>
     </ul>
 
     <div class="tab-content" id="myTabContent">
 
-        <div class="tab-pane fade show active" id="calendarPage" role="tabpanel" aria-labelledby="calendar-tab">
+        <div class="tab-pane fade {{$calendarPage}}" id="calendarPage" role="tabpanel" aria-labelledby="calendar-tab">
 
             <div class="calendar-container">
                 <div class="calendar-header">
@@ -182,112 +194,143 @@
                         $dayOfWeek = ucfirst(Carbon\Carbon::create($currentYear, $currentMonth, $day)->locale('pt_BR')->dayName);
                         $hasSchedule = isset($schedulesByDayOfWeek[$dayOfWeek]);
                         $isFullyNonWorking = in_array($date, $fullyNonWorkingDays);
+                        $isWorkDay = in_array($dayOfWeek, $workDays); // Verifica se o dia é um dia de trabalho
                     @endphp
                     <div class="day
                         @if($date === $selectedDay) selected-day @endif
-                        @if(!$hasSchedule) no-work-day @endif
+                        @if($isWorkDay) work-day @endif
                         @if($isFullyNonWorking) fully-non-working-day @endif"
                         wire:click="selectDay({{ $day }})">
                         <span>{{ $day }}</span>
                     </div>
-
                     @endfor
                 </div>
 
+
             </div>
+
             <div class="mt-4">
-                <h4>Horários do Dia Selecionado</h4>
+                <div class="d-flex justify-content-between">
+                    <h4>Horários do Dia Selecionado</h4>
+
+
+                </div>
+
                 @if($selectedDay)
+
                     <p><strong>Data:</strong> {{ \Carbon\Carbon::create($selectedDay)->translatedFormat('d \d\e F \d\e Y') }}</p>
                     @if(count($daySchedules) > 0)
+                    <div class="buttons-selct-all">
+                        @if($selectedDay)
+                            <button class="btn btn-sm btn-danger" wire:click="markFullDay">Desativar Todos</button>
+                        @endif
+                        @if($selectedDay)
+                            <button class="btn btn-sm btn-success" wire:click="unmarkFullDay">Ativar Todos</button>
+                        @endif
+                    </div>
                     <div class="time-in-day">
                         @foreach($daySchedules as $time)
 
-                        <div class="time
-                            @if(in_array($time, $nonWorkingHours)) non-working-hour @endif"
-                            wire:click="markAsNonWorkingHour('{{ $time }}')">
-                            <span>{{ $time }}</span>
-                        </div>
+                            <div class="time
+                                @if(in_array($time, $nonWorkingHours)) non-working-hour @endif"
+                                wire:click="markAsNonWorkingHour('{{ $time }}')">
+                                <span>{{ $time }}</span>
+                            </div>
 
-                    @endforeach
+                        @endforeach
 
                     </div>
+
                     @else
                         <p>Não há horários configurados para este dia.</p>
                     @endif
-                    @if($selectedDay)
-                        <button class="btn btn-danger mb-3" wire:click="markFullDay">Marcar Dia Todo como Não Trabalhável</button>
-                    @endif
-                    @if($selectedDay)
-                        <button class="btn btn-success mb-3" wire:click="unmarkFullDay">Tornar Dia Todo Trabalhável</button>
-                    @endif
-
                 @else
                     <p>Nenhum dia selecionado.</p>
                 @endif
-
             </div>
-
-
-
         </div>
 
         <!-- Aba do horário ativo -->
-        <div class="tab-pane fade" id="horaActivePage" role="tabpanel" aria-labelledby="hora-tab">
-            <form wire:submit.prevent="addSchedule" class="card p-4 mb-4">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label for="day_of_week" class="form-label">Dia da Semana:</label>
-                        <select wire:model="newSchedule.day_of_week" id="day_of_week" class="form-select">
-                            <option value="">Selecione</option>
-                            <option value="Segunda-feira">Segunda-feira</option>
-                            <option value="Terça-feira">Terça-feira</option>
-                            <option value="Quarta-feira">Quarta-feira</option>
-                            <option value="Quinta-feira">Quinta-feira</option>
-                            <option value="Sexta-feira">Sexta-feira</option>
-                            <option value="Sábado">Sábado</option>
-                            <option value="Domingo">Domingo</option>
-                        </select>
-                        @error('newSchedule.day_of_week') <span class="text-danger">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label for="start_time" class="form-label">Horário de Início:</label>
-                        <input type="time" wire:model="newSchedule.start_time" id="start_time" class="form-control">
-                        @error('newSchedule.start_time') <span class="text-danger">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label for="end_time" class="form-label">Horário de Término:</label>
-                        <input type="time" wire:model="newSchedule.end_time" id="end_time" class="form-control">
-                        @error('newSchedule.end_time') <span class="text-danger">{{ $message }}</span> @enderror
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary">Adicionar Horário</button>
-            </form>
-
-            <!-- Lista de horários existentes -->
-            <div class="card">
-                <div class="card-header">
-                    <h3>Horários Configurados</h3>
-                </div>
-                <ul class="list-group list-group-flush">
-                    @forelse ($workSchedules as $schedule)
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div class="tab-pane fade {{$horaActivePage}}" id="horaActivePage" role="tabpanel" aria-labelledby="hora-tab">
+            <form wire:submit.prevent="saveSchedules" class="card p-4 mb-4">
+                <div class="row align-items-center mb-3">
+                    <div class="col-12 d-flex justify-content-between">
+                        <div>
+                            Dia da Semana
+                        </div>
+                        <div class="d-flex justify-content-between" style="width: 400px;padding: 0 37px;">
                             <div>
-                                <strong>{{ $schedule['day_of_week'] }}</strong>:
-                                {{ $schedule['start_time'] }} - {{ $schedule['end_time'] }}
+                                Inicio
                             </div>
-                            <button wire:click="deleteSchedule({{ $schedule['id'] }})" class="btn btn-danger btn-sm">
-                                Remover
-                            </button>
-                        </li>
-                    @empty
-                        <li class="list-group-item text-center">Nenhum horário configurado.</li>
-                    @endforelse
-                </ul>
-            </div>
+                            <div>
+                                Pausa (opcional)
+                            </div>
+                            <div>
+                               Fim
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                @foreach ($daysOfWeek as $day)
+                <div class="row align-items-center mb-3">
+                    <div class="col-12 d-flex justify-content-between">
+                        <div>
+                            <input
+                                type="checkbox"
+                                wire:model="scheduleInputs.{{ $day }}.enabled"
+                                id="enable-{{ $day }}"
+                            >
+                            <label for="enable-{{ $day }}">{{ $day }}</label>
+                        </div>
+                        <div class="d-flex">
+                            <div>
+                                <input
+                                    type="time"
+                                    class="form-control"
+                                    wire:model.lazy="scheduleInputs.{{ $day }}.start_time"
+                                    @if(!isset($scheduleInputs[$day]['enabled']) || !$scheduleInputs[$day]['enabled']) disabled @endif
+                                >
+                                @error("scheduleInputs.$day.start_time") <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                            <div>
+                                <input
+                                    type="time"
+                                    class="form-control"
+                                    wire:model.lazy="scheduleInputs.{{ $day }}.pause_start"
+                                    placeholder="Início Pausa (opcional)"
+                                    @if(!isset($scheduleInputs[$day]['enabled']) || !$scheduleInputs[$day]['enabled']) disabled @endif
+                                >
+                                @error("scheduleInputs.$day.pause_start") <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                            <div>
+                                <input
+                                    type="time"
+                                    class="form-control"
+                                    wire:model.lazy="scheduleInputs.{{ $day }}.pause_end"
+                                    placeholder="Fim Pausa (opcional)"
+                                    @if(!isset($scheduleInputs[$day]['enabled']) || !$scheduleInputs[$day]['enabled']) disabled @endif
+                                >
+                                @error("scheduleInputs.$day.pause_end") <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                            <div>
+                                <input
+                                    type="time"
+                                    class="form-control"
+                                    wire:model.lazy="scheduleInputs.{{ $day }}.end_time"
+                                    @if(!isset($scheduleInputs[$day]['enabled']) || !$scheduleInputs[$day]['enabled']) disabled @endif
+                                >
+                                @error("scheduleInputs.$day.end_time") <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                @endforeach
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </form>
         </div>
     </div>
     <script>

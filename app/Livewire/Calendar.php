@@ -17,7 +17,7 @@ class Calendar extends Component
     public $selectedServices = [];
     public $selectedDay;
     public $dayEvents = [];
-    public $isAddEventOpen = true;
+    public $isAddEventOpen = false;
 
     public function mount()
     {

@@ -13,6 +13,8 @@ class WorkSchedule extends Model
         'day_of_week',
         'start_time',
         'end_time',
+        'pause_start',
+        'pause_end',
         'schedule_block',
     ];
 

@@ -54,6 +54,7 @@
                 display: flex;
                 justify-content: space-between;
                 color: white;
+                padding: 0;
             }
 
             .navbar a {
@@ -91,9 +92,9 @@
                         <a href="{{ url('/dashboard') }}">Dashboard</a>
                     @else
                         <a href="{{ route('login') }}">Log in</a>
-                        @if (Route::has('register'))
+                        {{-- @if (Route::has('register'))
                             <a href="{{ route('register') }}">Register</a>
-                        @endif
+                        @endif --}}
                     @endauth
                 @endif
             </div>

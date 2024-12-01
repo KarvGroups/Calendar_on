@@ -32,76 +32,23 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-
-
-        <!-- Styles -->
+    </head>
         <style>
-            /* Estilos básicos para a navbar */
-            body {
-                font-family: 'Figtree', sans-serif;
-                margin: 0;
-                padding: 0;
-            }
-
-            .navbar {
-                background-color: #333;
-                overflow: hidden;
-                position: fixed;
-                top: 0;
-                width: 100%;
-                display: flex;
-                justify-content: space-between;
-                color: white;
-                z-index: 1;
-            }
-
-            .navbar a {
-                color: white;
-                text-align: center;
-                padding: 16px 23px;
-                text-decoration: none;
-                font-size: 17px;
-            }
-
-            .navbar a:hover {
-                background-color: #ddd;
-                color: black;
-            }
-
-            .navbar-right {
-                display: flex;
-            }
-
-            .content {
-                padding-top: 73px;
+            body{
+                height: 100ch;
             }
         </style>
-    </head>
     <body>
-        <div class="navbar">
-            {{-- <a href="{{ url('/') }}">Home</a> --}}
-            <div></div>
-            <div class="navbar-right">
-                @if (Route::has('login'))
-                    @auth
-                        <a href="{{ url('/dashboard') }}">Dashboard</a>
-                    @else
-                        <a href="{{ route('login') }}">Log in</a>
-                        @if (Route::has('register'))
-                            <a href="{{ route('register') }}">Register</a>
-                        @endif
-                    @endauth
-                @endif
-            </div>
-        </div>
         <div class="content">
-            @if(auth()->check())
+
             @if(auth()->user())
-                @livewire('agendamento-form', ['users' => auth()->user()])
+                @livewire('agendamento-form', ['users' => auth()->user(), 'company' => null])
+            @elseif($users)
+                @livewire('agendamento-form', ['users' => $users, 'company' => $company])
             @else
                 <p>Não tem usuário para selecionar!</p>
             @endif
-        @endif
+
 
 
 

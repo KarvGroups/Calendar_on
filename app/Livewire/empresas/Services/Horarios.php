@@ -18,15 +18,33 @@ class Horarios extends Component
     public $daySchedules = [];
     public $nonWorkingHours = [];
 
+    public $calendarPage = "show active";
+    public $horaActivePage = "";
+
+
     public $workSchedules = [];
     public $newSchedule = [
         'day_of_week' => '',
         'start_time' => '',
         'end_time' => '',
+        'pause_start' => '',
+        'pause_end' => '',
     ];
     public $schedulesByDayOfWeek = [];
     public $fullyNonWorkingDays = [];
-    
+
+    public $daysOfWeek = [
+        'Segunda-feira',
+        'Terça-feira',
+        'Quarta-feira',
+        'Quinta-feira',
+        'Sexta-feira',
+        'Sábado',
+        'Domingo',
+    ];
+    public $scheduleInputs = [];
+    public $workDays = [];
+
 
     public function mount()
     {
@@ -36,13 +54,80 @@ class Horarios extends Component
 
         $this->workSchedules = WorkSchedule::where('user_id', Auth::id())->get()->toArray();
 
-        $this->schedulesByDayOfWeek = WorkSchedule::where('user_id', Auth::id())
-            ->get()
-            ->groupBy('day_of_week')
-            ->toArray();
+        foreach ($this->daysOfWeek as $day) {
+            $existingSchedule = WorkSchedule::where('user_id', Auth::id())
+                ->where('day_of_week', $day)
+                ->first();
+
+            $this->scheduleInputs[$day] = [
+                'start_time' => $existingSchedule ? Carbon::createFromFormat('H:i:s', $existingSchedule->start_time)->format('H:i') : '',
+                'pause_start' => $existingSchedule && $existingSchedule->pause_start ? Carbon::createFromFormat('H:i:s', $existingSchedule->pause_start)->format('H:i') : '',
+                'pause_end' => $existingSchedule && $existingSchedule->pause_end ? Carbon::createFromFormat('H:i:s', $existingSchedule->pause_end)->format('H:i') : '',
+                'end_time' => $existingSchedule ? Carbon::createFromFormat('H:i:s', $existingSchedule->end_time)->format('H:i') : '',
+                'enabled' => (bool) $existingSchedule,
+            ];
+
+            if ($existingSchedule) {
+                $this->workDays[] = $day;
+            }
+        }
 
         $this->loadFullyNonWorkingDays();
     }
+
+
+
+
+    public function saveSchedules()
+    {
+        $this->workDays = []; // Limpa os dias anteriores
+
+        foreach ($this->scheduleInputs as $day => $input) {
+            if (!isset($input['enabled']) || !$input['enabled']) {
+                // Ignorar dias desabilitados
+                continue;
+            }
+
+            // Verificar se os campos obrigatórios estão preenchidos
+            if (empty($input['start_time']) || empty($input['end_time'])) {
+                $this->addError("scheduleInputs.$day.start_time", 'O horário de início é obrigatório.');
+                $this->addError("scheduleInputs.$day.end_time", 'O horário de término é obrigatório.');
+                continue;
+            }
+
+            // Validar os campos no formato correto
+            $this->validate([
+                "scheduleInputs.$day.start_time" => 'required|date_format:H:i',
+                "scheduleInputs.$day.end_time" => 'required|date_format:H:i|after:scheduleInputs.' . $day . '.start_time',
+                "scheduleInputs.$day.pause_start" => 'nullable|date_format:H:i|after:scheduleInputs.' . $day . '.start_time',
+                "scheduleInputs.$day.pause_end" => 'nullable|date_format:H:i|after:scheduleInputs.' . $day . '.pause_start|before:scheduleInputs.' . $day . '.end_time',
+            ]);
+
+            // Criar ou atualizar o horário com pausa
+            WorkSchedule::updateOrCreate(
+                [
+                    'user_id' => Auth::id(),
+                    'day_of_week' => $day,
+                ],
+                [
+                    'start_time' => $input['start_time'],
+                    'pause_start' => $input['pause_start'] ?? null,
+                    'pause_end' => $input['pause_end'] ?? null,
+                    'end_time' => $input['end_time'],
+                ]
+            );
+
+            $this->workDays[] = $day;
+        }
+
+        $this->calendarPage = "";
+        $this->horaActivePage = "show active";
+
+        session()->flash('message', 'Horários salvos com sucesso!');
+    }
+
+
+
     public function loadFullyNonWorkingDays()
     {
         $this->fullyNonWorkingDays = NonWorkingHours::where('user_id', Auth::id())
@@ -215,21 +300,30 @@ class Horarios extends Component
 
             $this->daySchedules = [];
             foreach ($schedules as $schedule) {
+                // Gera intervalos completos
                 $intervals = $this->generateIntervals($schedule->start_time, $schedule->end_time);
+
+                // Remove intervalos que estão dentro da pausa, se existir
+                if ($schedule->pause_start && $schedule->pause_end) {
+                    $pauseIntervals = $this->generateIntervals($schedule->pause_start, $schedule->pause_end);
+                    $intervals = array_diff($intervals, $pauseIntervals);
+                }
+
                 $this->daySchedules = array_merge($this->daySchedules, $intervals);
             }
 
+            // Obtém horas não trabalhadas da tabela NonWorkingHours
             $this->nonWorkingHours = NonWorkingHours::where('user_id', Auth::id())
-            ->where('date', $this->selectedDay)
-            ->get()
-            ->pluck('time')
-            ->map(function ($time) {
-                return \Carbon\Carbon::createFromFormat('H:i:s', $time)->format('H:i');
-            })
-            ->toArray();
-
+                ->where('date', $this->selectedDay)
+                ->get()
+                ->pluck('time')
+                ->map(function ($time) {
+                    return Carbon::createFromFormat('H:i:s', $time)->format('H:i');
+                })
+                ->toArray();
         }
     }
+
 
     private function generateIntervals($startTime, $endTime)
     {
@@ -249,11 +343,16 @@ class Horarios extends Component
         return $intervals;
     }
 
-
-
-
-
-
+    public function switchTab($tab)
+    {
+        if ($tab === 'calendar') {
+            $this->calendarPage = "show active";
+            $this->horaActivePage = "";
+        } elseif ($tab === 'hora') {
+            $this->calendarPage = "";
+            $this->horaActivePage = "show active";
+        }
+    }
 
     public function render()
     {
